@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Путешествуй по России - Блог о путешествиях{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <h1 class="mb-4">Блог о путешествиях по России</h1>
+            
+            <!-- Основные статьи -->
+            <div class="row">
+                <!-- Главная статья -->
+                <div class="col-12 mb-4">
+                    <div class="card">
+                        <img src="https://via.placeholder.com/800x400" class="card-img-top" alt="Байкал летом">
+                        <div class="card-body">
+                            <span class="badge bg-primary mb-2">Природа</span>
+                            <h2 class="h3 card-title">10 причин посетить Байкал этим летом</h2>
+                            <p class="text-muted small">15 июня 2025 | Автор: Анна Иванова</p>
+                            <p class="card-text">Озеро Байкал — одно из самых удивительных мест на планете. Это самое глубокое озеро в мире и крупнейший природный резервуар пресной воды. Летом Байкал особенно прекрасен: чистейшая вода, живописные бухты, уникальная флора и фауна...</p>
+                            <a href="#" class="btn btn-outline-primary">Читать далее</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Статьи в ряд -->
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <img src="https://via.placeholder.com/400x250" class="card-img-top" alt="Казань">
+                        <div class="card-body">
+                            <span class="badge bg-success mb-2">Города</span>
+                            <h3 class="h5 card-title">Выходные в Казани: что посмотреть за 48 часов</h3>
+                            <p class="text-muted small">10 июня 2025 | Автор: Сергей Петров</p>
+                            <p class="card-text">Казань — город, где гармонично переплетаются восточная и европейская культуры. Кремль, мечеть Кул-Шариф, улица Баумана — это лишь малая часть достопримечательностей...</p>
+                            <a href="#" class="btn btn-outline-primary btn-sm">Читать далее</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <img src="https://via.placeholder.com/400x250" class="card-img-top" alt="Карелия">
+                        <div class="card-body">
+                            <span class="badge bg-primary mb-2">Природа</span>
+                            <h3 class="h5 card-title">Карелия: путешествие в страну тысячи озер</h3>
+                            <p class="text-muted small">5 июня 2025 | Автор: Мария Сидорова</p>
+                            <p class="card-text">Карелия привлекает туристов своими кристально чистыми озерами, водопадами, хвойными лесами и уникальными памятниками деревянного зодчества...</p>
+                            <a href="#" class="btn btn-outline-primary btn-sm">Читать далее</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <img src="https://via.placeholder.com/400x250" class="card-img-top" alt="Гастрономический туризм">
+                        <div class="card-body">
+                            <span class="badge bg-danger mb-2">Гастрономия</span>
+                            <h3 class="h5 card-title">Гастрономическое путешествие по Золотому кольцу</h3>
+                            <p class="text-muted small">1 июня 2025 | Автор: Дмитрий Кузнецов</p>
+                            <p class="card-text">Золотое кольцо России — это не только древние города с богатой историей, но и регион с уникальными кулинарными традициями...</p>
+                            <a href="#" class="btn btn-outline-primary btn-sm">Читать далее</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <img src="https://via.placeholder.com/400x250" class="card-img-top" alt="Алтай">
+                        <div class="card-body">
+                            <span class="badge bg-warning text-dark mb-2">Приключения</span>
+                            <h3 class="h5 card-title">Треккинг по Алтаю: маршруты для начинающих</h3>
+                            <p class="text-muted small">28 мая 2025 | Автор: Александр Николаев</p>
+                            <p class="card-text">Алтайские горы — идеальное место для тех, кто хочет попробовать себя в треккинге. Мы подготовили несколько маршрутов, которые подойдут даже новичкам...</p>
+                            <a href="#" class="btn btn-outline-primary btn-sm">Читать далее</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Пагинация -->
+            <nav aria-label="Навигация по страницам блога">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Предыдущая</a>
+                    </li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">Следующая</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        
+        <!-- Боковая панель -->
+        <div class="col-lg-4">
+            <!-- Поиск -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="h5 card-title">Поиск по блогу</h3>
+                    <form>
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Что ищем?">
+                            <button class="btn btn-primary" type="submit">Найти</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Категории -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="h5 card-title">Категории</h3>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="#" class="btn btn-sm btn-outline-primary">Природа (15)</a>
+                        <a href="#" class="btn btn-sm btn-outline-success">Города (12)</a>
+                        <a href="#" class="btn btn-sm btn-outline-danger">Гастрономия (8)</a>
+                        <a href="#" class="btn btn-sm btn-outline-warning">Приключения (10)</a>
+                        <a href="#" class="btn btn-sm btn-outline-info">Культура (7)</a>
+                        <a href="#" class="btn btn-sm btn-outline-secondary">Советы (9)</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Популярные статьи -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="h5 card-title">Популярные статьи</h3>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <a href="#" class="text-decoration-none">
+                                <div class="d-flex align-items-center">
+                                    <img src="https://via.placeholder.com/60x60" class="rounded me-2" alt="Миниатюра">
+                                    <div>
+                                        <h4 class="h6 mb-0">Топ-10 пляжей Черного моря</h4>
+                                        <p class="text-muted small mb-0">20 мая 2025</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="#" class="text-decoration-none">
+                                <div class="d-flex align-items-center">
+                                    <img src="https://via.placeholder.com/60x60" class="rounded me-2" alt="Миниатюра">
+                                    <div>
+                                        <h4 class="h6 mb-0">Что попробовать в Дагестане</h4>
+                                        <p class="text-muted small mb-0">15 мая 2025</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="#" class="text-decoration-none">
+                                <div class="d-flex align-items-center">
+                                    <img src="https://via.placeholder.com/60x60" class="rounded me-2" alt="Миниатюра">
+                                    <div>
+                                        <h4 class="h6 mb-0">Как сэкономить на путешествии в Сочи</h4>
+                                        <p class="text-muted small mb-0">10 мая 2025</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="text-decoration-none">
+                                <div class="d-flex align-items-center">
+                                    <img src="https://via.placeholder.com/60x60" class="rounded me-2" alt="Миниатюра">
+                                    <div>
+                                        <h4 class="h6 mb-0">Зимний отдых в Шерегеше</h4>
+                                        <p class="text-muted small mb-0">5 мая 2025</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Подписка -->
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="h5 card-title">Подписаться на новости</h3>
+                    <p class="card-text">Получайте новые статьи о путешествиях по России прямо на вашу почту</p>
+                    <form>
+                        <div class="mb-3">
+                            <input type="email" class="form-control" placeholder="Ваш email">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Подписаться</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

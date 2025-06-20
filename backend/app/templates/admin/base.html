@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Админ-панель - Путешествуй по России{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Admin CSS -->
+    <link rel="stylesheet" href="/static/css/admin.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    {% block extra_css %}{% endblock %}
+    
+    <style>
+        :root {
+            --sidebar-width: 280px;
+        }
+        
+        body {
+            overflow-x: hidden;
+            background-color: #f8f9fa;
+        }
+        
+        #sidebar {
+            min-width: var(--sidebar-width);
+            max-width: var(--sidebar-width);
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            background: #343a40;
+            color: #fff;
+            transition: all 0.3s;
+        }
+        
+        #sidebar.collapsed {
+            margin-left: calc(-1 * var(--sidebar-width));
+        }
+        
+        #content {
+            width: calc(100% - var(--sidebar-width));
+            margin-left: var(--sidebar-width);
+            transition: all 0.3s;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        #content.expanded {
+            width: 100%;
+            margin-left: 0;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            background: #212529;
+        }
+        
+        .sidebar-brand {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        
+        .sidebar-brand i {
+            margin-right: 10px;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 20px;
+            border-radius: 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .nav-link:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-link.active {
+            background: #0d6efd;
+            color: #fff;
+        }
+        
+        .admin-topbar {
+            background: #fff;
+            border-bottom: 1px solid #dee2e6;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 99;
+        }
+        
+        @media (max-width: 768px) {
+            #sidebar {
+                margin-left: calc(-1 * var(--sidebar-width));
+            }
+            
+            #sidebar.active {
+                margin-left: 0;
+            }
+            
+            #content {
+                width: 100%;
+                margin-left: 0;
+            }
+        }
+        
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: none;
+            border-radius: 0.5rem;
+        }
+        
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+            padding: 1rem;
+            border-top-left-radius: 0.5rem !important;
+            border-top-right-radius: 0.5rem !important;
+            font-weight: 500;
+        }
+        
+        /* Status colors for badges */
+        .badge.bg-pending { background-color: #ffc107; }
+        .badge.bg-confirmed { background-color: #198754; }
+        .badge.bg-cancelled { background-color: #dc3545; }
+        .badge.bg-completed { background-color: #0dcaf0; }
+    </style>
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <nav id="sidebar">
+            <div class="d-flex flex-column h-100">
+                <div>
+                    <h5 class="sidebar-header mb-4">Админ-панель</h5>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.url.path == '/admin/dashboard' %}active{% endif %}" href="/admin/dashboard">
+                                <i class="fas fa-tachometer-alt me-2"></i> Панель управления
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.url.path == '/admin/tours' %}active{% endif %}" href="/admin/tours">
+                                <i class="fas fa-globe me-2"></i> Туры
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.url.path == '/admin/bookings' %}active{% endif %}" href="/admin/bookings">
+                                <i class="fas fa-calendar-check me-2"></i> Бронирования
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.url.path == '/admin/promotions' %}active{% endif %}" href="/admin/promotions">
+                                <i class="fas fa-percent me-2"></i> Акции
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.url.path == '/admin/reviews' %}active{% endif %}" href="/admin/reviews">
+                                <i class="fas fa-star me-2"></i> Отзывы
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.url.path == '/admin/users' %}active{% endif %}" href="/admin/users">
+                                <i class="fas fa-users me-2"></i> Пользователи
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="user-section mt-auto">
+                    <div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle w-100 d-flex align-items-center" type="button" data-bs-toggle="dropdown">
+                            <div class="me-2">{{ current_user.full_name[0] | upper }}</div>
+                            <span class="flex-grow-1 text-start">{{ current_user.full_name }}</span>
+                        </button>
+                        <ul class="dropdown-menu w-100">
+                            <li><a class="dropdown-item" href="/admin/profile"><i class="fas fa-user me-2"></i> Профиль</a></li>
+                            <li><a class="dropdown-item" href="/admin/settings"><i class="fas fa-cog me-2"></i> Настройки</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt me-2"></i> Выйти</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Page Content -->
+        <div id="content">
+            <div class="admin-topbar mb-4">
+                <button type="button" id="sidebarCollapse" class="btn btn-outline-secondary">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <div class="d-flex align-items-center">
+                    <div class="dropdown">
+                        <button class="btn dropdown-toggle d-flex align-items-center" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle me-2"></i>
+                            {{ current_user.full_name }}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                            <li><a class="dropdown-item" href="/admin/profile"><i class="fas fa-user me-2"></i> Мой профиль</a></li>
+                            <li><a class="dropdown-item" href="/admin/settings"><i class="fas fa-cog me-2"></i> Настройки</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="/logout"><i class="fas fa-sign-out-alt me-2"></i> Выйти</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="container-fluid p-0">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom Admin JS -->
+    <script src="/static/js/admin.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            $('#sidebarCollapse').on('click', function() {
+                $('#sidebar').toggleClass('collapsed');
+                $('#content').toggleClass('expanded');
+            });
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

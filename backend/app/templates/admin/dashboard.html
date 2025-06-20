@@ -1,0 +1,171 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Панель управления - Путешествуй по России{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="mb-4">Панель управления</h2>
+        
+        <div class="row">
+            <!-- Статистика карточек -->
+            <div class="col-md-3">
+                <div class="card text-white bg-primary">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Всего туров</h5>
+                        <p class="display-4 mb-0">{{ stats.total_tours }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card text-white bg-success">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Активных бронирований</h5>
+                        <p class="display-4 mb-0">{{ stats.active_bookings }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card text-white bg-info">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Доход за месяц</h5>
+                        <p class="display-4 mb-0">{{ "{:,.0f}".format(stats.monthly_revenue) }} ₽</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card text-white bg-warning">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Новых клиентов</h5>
+                        <p class="display-4 mb-0">{{ stats.new_clients }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Графики -->
+<div class="row mb-4">
+    <!-- Продажи по месяцам -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Продажи по месяцам</h5>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-secondary">За год</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary">За квартал</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary active">За 30 дней</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <canvas id="monthlySalesChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Статусы бронирований -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Статусы бронирований</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="bookingStatusChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Популярные направления и Последние активности -->
+<div class="row">
+    <!-- Популярные направления -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Популярные направления</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="popularDestinationsChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Последние активности -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Последние активности</h5>
+                <a href="#" class="btn btn-sm btn-outline-primary">Все активности</a>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    {% for activity in activities %}
+                    <div class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ activity.title }}</h6>
+                            <small class="text-muted">{{ activity.timestamp }}</small>
+                        </div>
+                        <p class="mb-1">{{ activity.description }}</p>
+                        <small class="text-muted">{{ activity.user }}</small>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted">
+                        <p>Нет активностей за последнее время</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const salesLabels = JSON.parse('{{ sales_labels|default("[]")|safe }}');
+    const salesValues = JSON.parse('{{ sales_values|default("[]")|safe }}');
+    const statusLabels = JSON.parse('{{ status_labels|default("[]")|safe }}');
+    const statusCounts = JSON.parse('{{ status_counts|default("[]")|safe }}');
+    const popLabels = JSON.parse('{{ pop_labels|default("[]")|safe }}');
+    const popCounts = JSON.parse('{{ pop_counts|default("[]")|safe }}');
+
+    // Helper to render or show placeholder
+    function renderChart(ctx, type, labels, data, options) {
+        if (labels.length === 0 || data.length === 0 || data.every(v => v === 0)) {
+            ctx.parentNode.innerHTML = '<p class="text-center text-muted">Нет данных</p>';
+            return;
+        }
+        new Chart(ctx, {
+            type: type,
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: options.label || '',
+                    data: data,
+                    backgroundColor: options.backgroundColor || 'rgba(54, 162, 235, 0.6)',
+                    borderColor: options.borderColor || 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                    fill: options.fill || false,
+                    tension: 0.3,
+                }]
+            },
+            options: options.chartOptions || {responsive: true, maintainAspectRatio: false, plugins:{legend:{display:false}}}
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctxSales = document.getElementById('monthlySalesChart').getContext('2d');
+        renderChart(ctxSales, 'line', salesLabels, salesValues, {label: 'Продажи (₽)', fill: true});
+
+        const ctxStatus = document.getElementById('bookingStatusChart').getContext('2d');
+        renderChart(ctxStatus, 'doughnut', statusLabels, statusCounts, {backgroundColor: ['#198754', '#ffc107', '#0dcaf0', '#dc3545']});
+
+        const ctxDest = document.getElementById('popularDestinationsChart').getContext('2d');
+        renderChart(ctxDest, 'bar', popLabels, popCounts, {});
+    });
+</script>
+{% endblock %} 

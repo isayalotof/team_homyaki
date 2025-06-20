@@ -1,0 +1,31 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Мой профиль - Путешествуй по России{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Профиль пользователя</h2>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-4 text-center">
+                <i class="fas fa-user-circle fa-7x text-muted"></i>
+            </div>
+            <div class="col-md-8">
+                <h4>{{ current_user.full_name or current_user.email }}</h4>
+                <p class="mb-1"><strong>Email:</strong> {{ current_user.email }}</p>
+                <p class="mb-1"><strong>Телефон:</strong> {{ current_user.phone or '—' }}</p>
+                <p class="mb-1"><strong>Роль:</strong> {{ current_user.role.value|replace('_',' ') }}</p>
+                <p class="mb-1"><strong>Статус:</strong>
+                    {% if current_user.is_active %}
+                    <span class="badge bg-success">Активен</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Неактивен</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %} 

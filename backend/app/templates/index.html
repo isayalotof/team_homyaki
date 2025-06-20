@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Путешествуй по России — Главная{% endblock %}
+
+{% block content %}
+{% from "components/tour-card.html" import tour_card with context %}
+
+<!-- Hero Section -->
+<section class="hero" id="hero-section" data-bg="{{ url_for('static', path='images/hero-bg.jpg') }}">
+    <div class="container hero-content animate-on-scroll">
+        <h1 class="hero-title">Путешествуй по России</h1>
+        <p class="hero-subtitle">Лучшие туры и впечатления по всей стране — от моря до гор!</p>
+        <div class="hero-search mt-4">
+            {% from "components/search-form.html" import search_form with context %}
+            {{ search_form(countries=["Россия"], tour_types=tour_types, class_name="hero-search-form") }}
+        </div>
+    </div>
+</section>
+
+<!-- Popular Destinations -->
+<section class="section section-popular-destinations bg-light">
+    <div class="container">
+        <div class="section-title animate-on-scroll">
+            <h2>Популярные направления</h2>
+            <p>Откройте для себя лучшие места для отдыха и приключений</p>
+        </div>
+        <div class="row g-4 tour-grid">
+            {% for tour in tours %}
+            <div class="col-md-4 col-sm-6 animate-on-scroll">
+                {{ tour_card(tour) }}
+            </div>
+            {% else %}
+            <p>Туры пока не добавлены.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Tour Constructor CTA -->
+<section class="section section-cta">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-7 animate-on-scroll">
+                <h2>Создайте свой идеальный маршрут</h2>
+                <p class="lead mb-4">Наш конструктор тура позволяет вам самостоятельно выбрать города и достопримечательности, которые вы хотите посетить, и создать индивидуальный маршрут путешествия по России.</p>
+                <ul class="list-unstyled mb-4">
+                    <li><i class="fas fa-check-circle text-success me-2"></i> Выбирайте города и достопримечательности</li>
+                    <li><i class="fas fa-check-circle text-success me-2"></i> Настраивайте даты и продолжительность поездки</li>
+                    <li><i class="fas fa-check-circle text-success me-2"></i> Указывайте предпочтения по транспорту и проживанию</li>
+                    <li><i class="fas fa-check-circle text-success me-2"></i> Получайте индивидуальные предложения</li>
+                </ul>
+                <a href="/search" class="btn btn-primary btn-lg">
+                    <i class="fas fa-map-marked-alt me-2"></i>Создать маршрут
+                </a>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block animate-on-scroll">
+                <img src="/static/images/tours/tour_7cf5fe2b4d9c4e64b6dbec4b7b4fa0c7.jpg" alt="Конструктор тура" class="img-fluid rounded shadow-lg">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us -->
+<section class="section section-why-us bg-light">
+    <div class="container">
+        <div class="section-title animate-on-scroll">
+            <h2>Почему выбирают нас</h2>
+        </div>
+        <div class="row g-4 text-center">
+            <div class="col-md-3 col-6 animate-on-scroll">
+                <div class="feature-card">
+                    <div class="feature-card__icon"><i class="fas fa-award fa-2x"></i></div>
+                    <div class="feature-card__title">12 лет опыта</div>
+                    <div class="feature-card__text">Профессиональные гиды и организаторы</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 animate-on-scroll">
+                <div class="feature-card">
+                    <div class="feature-card__icon"><i class="fas fa-shield-alt fa-2x"></i></div>
+                    <div class="feature-card__title">Надежность</div>
+                    <div class="feature-card__text">Гарантия возврата и страховка</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 animate-on-scroll">
+                <div class="feature-card">
+                    <div class="feature-card__icon"><i class="fas fa-tags fa-2x"></i></div>
+                    <div class="feature-card__title">Лучшие цены</div>
+                    <div class="feature-card__text">Скидки и акции круглый год</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 animate-on-scroll">
+                <div class="feature-card">
+                    <div class="feature-card__icon"><i class="fas fa-headset fa-2x"></i></div>
+                    <div class="feature-card__title">Поддержка 24/7</div>
+                    <div class="feature-card__text">Всегда на связи для вас</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Reviews Slider -->
+<section class="section section-reviews">
+    <div class="container">
+        <div class="section-title animate-on-scroll">
+            <h2>Отзывы наших клиентов</h2>
+        </div>
+        <div class="testimonial-slider image-slider animate-on-scroll" data-auto-slide="7000">
+            {% if reviews %}
+                {% for review in reviews %}
+                <div class="image-slider__slide testimonial-card">
+                    <div class="testimonial-card__content">
+                        <div class="testimonial-card__quote">{{ review.comment }}</div>
+                        <div class="testimonial-card__author">
+                            <div>
+                                <div class="testimonial-card__name">{{ review.author_name or review.user.full_name }}</div>
+                                {% from "components/star-rating.html" import star_rating %}
+                                {{ star_rating(review.rating, size="small") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-4">
+                    <p>Пока нет отзывов. <a href="/reviews">Станьте первым!</a></p>
+                </div>
+            {% endif %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="/reviews" class="btn btn-outline-primary">Все отзывы</a>
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter Subscription -->
+<section class="section section-newsletter bg-gradient-primary text-white">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="newsletter-box p-4 rounded shadow text-center animate-on-scroll">
+                    <h3 class="mb-3">Подпишитесь на спецпредложения и новости</h3>
+                    <form id="newsletter-form" class="row g-2 justify-content-center needs-validation" novalidate>
+                        <div class="col-md-8 col-12">
+                            <input type="email" class="form-control form-control-lg" id="newsletter-email" placeholder="Ваш email" required>
+                            <div class="invalid-feedback">Пожалуйста, введите корректный email.</div>
+                        </div>
+                        <div class="col-md-4 col-12">
+                            <button type="submit" class="btn btn-accent btn-lg w-100">Подписаться</button>
+                        </div>
+                    </form>
+                    <div id="newsletter-success" class="alert alert-success mt-3 d-none" role="alert">
+                        Спасибо за подписку!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Установка background-image для hero через data-bg
+window.addEventListener('DOMContentLoaded', function() {
+    const hero = document.getElementById('hero-section');
+    if (hero && hero.dataset.bg) {
+        hero.style.backgroundImage = `url('${hero.dataset.bg}')`;
+    }
+    // Lazy loading for images
+    if ('loading' in HTMLImageElement.prototype) {
+        document.querySelectorAll('img.lazy-image').forEach(img => {
+            img.src = img.dataset.src;
+        });
+    } else {
+        document.querySelectorAll('img.lazy-image').forEach(img => {
+            const tempImg = new Image();
+            tempImg.onload = function() { img.src = tempImg.src; };
+            tempImg.src = img.dataset.src;
+        });
+    }
+});
+
+// Newsletter AJAX form
+const newsletterForm = document.getElementById('newsletter-form');
+if (newsletterForm) {
+    newsletterForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (!newsletterForm.checkValidity()) {
+            newsletterForm.classList.add('was-validated');
+            return;
+        }
+        // Имитация AJAX-запроса
+        setTimeout(function() {
+            document.getElementById('newsletter-success').classList.remove('d-none');
+            newsletterForm.reset();
+            newsletterForm.classList.remove('was-validated');
+        }, 800);
+    });
+}
+
+// AJAX search form (hero)
+document.querySelectorAll('.hero-search-form form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        // Собираем параметры поиска
+        const params = new URLSearchParams(new FormData(form)).toString();
+        // Имитация AJAX-запроса (можно заменить на fetch)
+        window.location.href = '/search?' + params;
+    });
+});
+</script>
+{% endblock %} 

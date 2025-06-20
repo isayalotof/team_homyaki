@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Поиск туров - Путешествуй по России{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3>Поиск туров</h3>
+        <div class="progress mt-3">
+            <div class="progress-bar" role="progressbar" style="width: {{ step * 25 }}%" aria-valuenow="{{ step * 25 }}" aria-valuemin="0" aria-valuemax="100">Шаг {{ step }} из 4</div>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if step == 1 %}
+            <!-- Step 1: Select Country -->
+            <h4 class="mb-4">Шаг 1: Выберите страну</h4>
+            <form action="/search" method="get">
+                <input type="hidden" name="step" value="2">
+                <div class="mb-3">
+                    <label for="country" class="form-label">Страна</label>
+                    <select class="form-select" id="country" name="country" required>
+                        <option value="" selected disabled>Выберите страну</option>
+                        {% for country_name in countries %}
+                        <option value="{{ country_name }}" {% if search_params.country == country_name %}selected{% endif %}>{{ country_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">Далее</button>
+                </div>
+            </form>
+        
+        {% elif step == 2 %}
+            <!-- Step 2: Select City and Tour Type -->
+            <h4 class="mb-4">Шаг 2: Выберите город и тип тура</h4>
+            <form action="/search" method="get">
+                <input type="hidden" name="step" value="3">
+                <input type="hidden" name="country" value="{{ search_params.country }}">
+                
+                <div class="mb-3">
+                    <label for="city" class="form-label">Город</label>
+                    <select class="form-select" id="city" name="city">
+                        <option value="">Любой город</option>
+                        {% for city_name in cities %}
+                        <option value="{{ city_name }}" {% if search_params.city == city_name %}selected{% endif %}>{{ city_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="tour_type_id" class="form-label">Тип тура</label>
+                    <select class="form-select" id="tour_type_id" name="tour_type_id">
+                        <option value="">Любой тип</option>
+                        {% for tour_type in tour_types %}
+                        <option value="{{ tour_type.id }}" {% if search_params.tour_type_id|int == tour_type.id %}selected{% endif %}>{{ tour_type.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="/search?step=1{% if search_params.country %}&country={{ search_params.country }}{% endif %}" class="btn btn-outline-secondary">Назад</a>
+                    <button type="submit" class="btn btn-primary">Далее</button>
+                </div>
+            </form>
+        
+        {% elif step == 3 %}
+            <!-- Step 3: Select Dates and Duration -->
+            <h4 class="mb-4">Шаг 3: Выберите даты и длительность</h4>
+            <form action="/search" method="get">
+                <input type="hidden" name="step" value="4">
+                <input type="hidden" name="country" value="{{ search_params.country }}">
+                {% if search_params.city %}
+                <input type="hidden" name="city" value="{{ search_params.city }}">
+                {% endif %}
+                {% if search_params.tour_type_id %}
+                <input type="hidden" name="tour_type_id" value="{{ search_params.tour_type_id }}">
+                {% endif %}
+                
+                <div class="mb-3">
+                    <label for="start_date" class="form-label">Дата начала</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" value="{{ search_params.start_date or '' }}">
+                    <div class="form-text">Оставьте пустым для поиска по любым датам</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="duration" class="form-label">Длительность (дней)</label>
+                    <select class="form-select" id="duration" name="duration">
+                        <option value="">Любая длительность</option>
+                        <option value="3" {% if search_params.duration|int == 3 %}selected{% endif %}>3 дня</option>
+                        <option value="5" {% if search_params.duration|int == 5 %}selected{% endif %}>5 дней</option>
+                        <option value="7" {% if search_params.duration|int == 7 %}selected{% endif %}>7 дней</option>
+                        <option value="10" {% if search_params.duration|int == 10 %}selected{% endif %}>10 дней</option>
+                        <option value="14" {% if search_params.duration|int == 14 %}selected{% endif %}>14 дней</option>
+                    </select>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="/search?step=2&country={{ search_params.country }}{% if search_params.city %}&city={{ search_params.city }}{% endif %}{% if search_params.tour_type_id %}&tour_type_id={{ search_params.tour_type_id }}{% endif %}" class="btn btn-outline-secondary">Назад</a>
+                    <button type="submit" class="btn btn-primary">Далее</button>
+                </div>
+            </form>
+        
+        {% elif step == 4 %}
+            <!-- Step 4: Number of Tourists and Results -->
+            <h4 class="mb-4">Шаг 4: Количество туристов и результаты</h4>
+            <form action="/search" method="get" class="mb-4">
+                <input type="hidden" name="step" value="4">
+                <input type="hidden" name="country" value="{{ search_params.country }}">
+                {% if search_params.city %}
+                <input type="hidden" name="city" value="{{ search_params.city }}">
+                {% endif %}
+                {% if search_params.tour_type_id %}
+                <input type="hidden" name="tour_type_id" value="{{ search_params.tour_type_id }}">
+                {% endif %}
+                {% if search_params.start_date %}
+                <input type="hidden" name="start_date" value="{{ search_params.start_date }}">
+                {% endif %}
+                {% if search_params.duration %}
+                <input type="hidden" name="duration" value="{{ search_params.duration }}">
+                {% endif %}
+                
+                <div class="mb-3">
+                    <label for="tourists" class="form-label">Количество туристов</label>
+                    <select class="form-select" id="tourists" name="tourists">
+                        <option value="1" {% if search_params.tourists|int == 1 %}selected{% endif %}>1</option>
+                        <option value="2" {% if search_params.tourists|int == 2 or not search_params.tourists %}selected{% endif %}>2</option>
+                        <option value="3" {% if search_params.tourists|int == 3 %}selected{% endif %}>3</option>
+                        <option value="4" {% if search_params.tourists|int == 4 %}selected{% endif %}>4</option>
+                        <option value="5" {% if search_params.tourists|int == 5 %}selected{% endif %}>5</option>
+                        <option value="6" {% if search_params.tourists|int == 6 %}selected{% endif %}>6</option>
+                    </select>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="/search?step=3&country={{ search_params.country }}{% if search_params.city %}&city={{ search_params.city }}{% endif %}{% if search_params.tour_type_id %}&tour_type_id={{ search_params.tour_type_id }}{% endif %}" class="btn btn-outline-secondary">Назад</a>
+                    <button type="submit" class="btn btn-primary">Найти туры</button>
+                </div>
+            </form>
+            
+            <!-- Search Summary -->
+            <div class="search-summary mb-4 p-3 bg-light rounded">
+                <h5>Параметры поиска:</h5>
+                <ul>
+                    <li><strong>Страна:</strong> {{ search_params.country }}</li>
+                    {% if search_params.city %}
+                    <li><strong>Город:</strong> {{ search_params.city }}</li>
+                    {% endif %}
+                    {% if search_params.tour_type_id %}
+                    <li><strong>Тип тура:</strong> 
+                        {% for tour_type in tour_types %}
+                            {% if tour_type.id|string == search_params.tour_type_id|string %}
+                                {{ tour_type.name }}
+                            {% endif %}
+                        {% endfor %}
+                    </li>
+                    {% endif %}
+                    {% if search_params.start_date %}
+                    <li><strong>Дата начала:</strong> {{ search_params.start_date }}</li>
+                    {% endif %}
+                    {% if search_params.duration %}
+                    <li><strong>Длительность:</strong> {{ search_params.duration }} дней</li>
+                    {% endif %}
+                    <li><strong>Количество туристов:</strong> {{ search_params.tourists or '2' }}</li>
+                </ul>
+            </div>
+            
+            <!-- Search Results -->
+            <h5>Результаты поиска:</h5>
+            {% if search_results %}
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    {% for tour in search_results %}
+                    <div class="col">
+                        <div class="card h-100">
+                            {% if tour.image_url %}
+                            <img src="{{ tour.image_url }}" class="card-img-top" alt="{{ tour.name }}">
+                            {% else %}
+                            <img src="/static/images/placeholder.jpg" class="card-img-top" alt="Placeholder">
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title">{{ tour.name }}</h5>
+                                <p class="card-text text-muted">{{ tour.country }}, {{ tour.city }}</p>
+                                <p class="card-text">{{ tour.description[:100] }}{% if tour.description|length > 100 %}...{% endif %}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="price-tag">{{ "{:,.0f}".format(tour.base_price) }} ₽</span>
+                                    <a href="/tours/{{ tour.id }}" class="btn btn-outline-primary">Подробнее</a>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-muted">{{ tour.duration_days }} дней / {{ tour.duration_days - 1 }} ночей</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    По вашему запросу туров не найдено. Попробуйте изменить параметры поиска.
+                </div>
+                <div class="text-center mt-3">
+                    <a href="/search?step=1" class="btn btn-outline-primary">Начать новый поиск</a>
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

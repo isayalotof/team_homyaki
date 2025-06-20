@@ -1,0 +1,275 @@
+/* ========== RESPONSIVE STYLES ========== */
+
+/* Extra small devices (phones, less than 576px) */
+@media (max-width: 575.98px) {
+    html {
+        font-size: 14px;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    h2 {
+        font-size: 1.75rem;
+    }
+    
+    h3 {
+        font-size: 1.5rem;
+    }
+    
+    .section {
+        padding: 3rem 0;
+    }
+    
+    .hero {
+        padding: 5rem 0;
+    }
+    
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.25rem;
+    }
+    
+    .hero-buttons {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .search-form {
+        padding: 1.5rem;
+    }
+    
+    .tour-card__image {
+        height: 180px;
+    }
+    
+    .tour-card__footer {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .tour-card__button {
+        width: 100%;
+    }
+    
+    .feature-card {
+        padding: 1.5rem;
+    }
+    
+    .feature-card__icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+    
+    .testimonial-card {
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+    
+    .testimonial-card__avatar {
+        width: 60px;
+        height: 60px;
+        top: -30px;
+    }
+    
+    .footer {
+        padding: 3rem 0 1.5rem;
+    }
+}
+
+/* Small devices (landscape phones, 576px and up) */
+@media (min-width: 576px) and (max-width: 767.98px) {
+    .section {
+        padding: 4rem 0;
+    }
+    
+    .hero {
+        padding: 6rem 0;
+    }
+    
+    .hero-title {
+        font-size: 3rem;
+    }
+    
+    .tour-card__image {
+        height: 200px;
+    }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .section {
+        padding: 4.5rem 0;
+    }
+    
+    .hero {
+        padding: 7rem 0;
+    }
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+    .navbar-nav .nav-link {
+        padding: 0.5rem 1.25rem;
+    }
+    
+    .tour-card__image {
+        height: 220px;
+    }
+}
+
+/* Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1200px;
+    }
+    
+    .tour-card__image {
+        height: 240px;
+    }
+}
+
+/* Custom media queries */
+
+/* For better readability on very large screens */
+@media (min-width: 1400px) {
+    html {
+        font-size: 18px;
+    }
+    
+    .container {
+        max-width: 1320px;
+    }
+}
+
+/* Mobile navigation */
+@media (max-width: 991.98px) {
+    .navbar {
+        padding: 0.75rem 0;
+    }
+    
+    .navbar-collapse {
+        background-color: var(--white);
+        padding: 1rem;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        margin-top: 0.75rem;
+    }
+    
+    .navbar-nav .nav-link {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .navbar-nav .nav-item:last-child .nav-link {
+        border-bottom: none;
+    }
+    
+    .navbar-nav .nav-link.active::after {
+        display: none;
+    }
+    
+    .navbar-nav .nav-link.active {
+        background-color: var(--light);
+        color: var(--primary);
+        border-radius: var(--border-radius);
+    }
+}
+
+/* Grid adjustments for tour cards */
+@media (min-width: 768px) {
+    .tour-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+    /* ensure bootstrap columns fill grid cells */
+    .tour-grid > [class^="col"],
+    .tour-grid > [class*=" col"] {
+        width: 100%;
+    }
+}
+
+/* Footer responsive adjustments */
+@media (max-width: 767.98px) {
+    .footer h5 {
+        margin-top: 1.5rem;
+    }
+    
+    .footer-bottom {
+        text-align: center;
+    }
+    
+    .footer-bottom .text-md-end {
+        text-align: center !important;
+        margin-top: 0.5rem;
+    }
+}
+
+/* Search form responsive adjustments */
+@media (max-width: 767.98px) {
+    .search-form__button {
+        width: 100%;
+        margin-top: 1rem;
+    }
+}
+
+/* Destination card responsive height */
+@media (max-width: 767.98px) {
+    .destination-card {
+        height: 250px;
+    }
+}
+
+/* Modal responsive adjustments */
+@media (max-width: 575.98px) {
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 1rem;
+    }
+}
+
+/* Booking card responsive adjustments */
+@media (max-width: 767.98px) {
+    .booking-card__header,
+    .booking-card__body,
+    .booking-card__footer {
+        padding: 1rem;
+    }
+    
+    .booking-card__footer {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .booking-card__actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+/* Review card responsive adjustments */
+@media (max-width: 575.98px) {
+    .review-card__header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .review-card__footer {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+} 

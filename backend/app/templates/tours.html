@@ -1,0 +1,810 @@
+{% extends "base.html" %}
+
+{% block title %}Все туры — Путешествуй по России{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css" />
+<style>
+    .filter-sidebar {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        height: 100%;
+    }
+    .filter-group {
+        margin-bottom: 1.5rem;
+    }
+    .filter-group h5 {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 0.5rem;
+    }
+    #price-slider, #duration-slider {
+        margin: 0 10px;
+    }
+    .slider-values {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+        font-weight: 500;
+    }
+    .view-switcher .btn {
+        color: #6c757d;
+    }
+    .view-switcher .btn.active {
+        color: var(--bs-primary);
+        background-color: transparent;
+        border-color: transparent;
+    }
+    
+    /* List View for Tour Card */
+    #tours-grid.list-view .tour-card {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+     #tours-grid.list-view .tour-card .tour-card__image {
+        width: 250px;
+        flex-shrink: 0;
+    }
+    #tours-grid.list-view .tour-card .tour-card__content {
+        padding: 1rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    #tours-grid.list-view .tour-card .tour-card__footer {
+        margin-top: auto; /* Pushes footer to the bottom */
+    }
+
+    /* Stars Filter Styles */
+    .stars-filter {
+        margin-bottom: 0.5rem;
+    }
+    .stars-item {
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.25rem;
+        margin-bottom: 0.25rem;
+        transition: all 0.2s;
+    }
+    .stars-item:hover {
+        background-color: #f0f0f0;
+    }
+    .stars-label {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+    .stars-label i {
+        margin-right: 2px;
+    }
+    .form-check-input:checked ~ .stars-label {
+        font-weight: 500;
+    }
+
+    /* Meal Type Filter Styles */
+    .meal-type-filter {
+        padding: 0.5rem 0;
+    }
+    .meal-option {
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.25rem;
+        margin-bottom: 0.25rem;
+        transition: all 0.2s;
+    }
+    .meal-option:hover {
+        background-color: #f0f0f0;
+    }
+    .meal-icon {
+        width: 20px;
+        margin-right: 8px;
+        text-align: center;
+    }
+    .meal-option .form-check-input:checked ~ .form-check-label {
+        font-weight: 500;
+        color: var(--bs-primary);
+    }
+    
+    /* Tour Card Hotel Stars and Meal Type */
+    .hotel-stars {
+        display: inline-flex;
+        align-items: center;
+    }
+    .hotel-stars i {
+        font-size: 0.8rem;
+        margin-right: 1px;
+    }
+    .meal-badge {
+        font-size: 0.75rem;
+        padding: 0.35em 0.65em;
+        display: inline-flex;
+        align-items: center;
+        white-space: nowrap;
+    }
+    .meal-badge i {
+        margin-right: 4px;
+    }
+    
+    /* Active state for meal-option */
+    .meal-option.active {
+        background-color: rgba(var(--bs-primary-rgb), 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Breadcrumbs -->
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Главная</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Туры</li>
+                </ol>
+            </nav>
+        </div>
+
+        {% if from_wizard %}
+        <!-- Уведомление о результатах из конструктора тура -->
+        <div class="col-12 mb-4">
+            <div class="alert alert-info" role="alert">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-map-marked-alt fa-2x me-3"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 class="alert-heading mb-1">Результаты из конструктора тура</h5>
+                        <p class="mb-0">Мы подобрали туры, соответствующие вашим предпочтениям.</p>
+                        
+                        {% if wizard_data and wizard_data.destinations %}
+                        <div class="mt-2">
+                            <strong>Направления:</strong>
+                            {% for dest in wizard_data.destinations %}
+                                <span class="badge bg-primary me-1">{{ dest.name }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        {% if wizard_data and wizard_data.dates and wizard_data.dates.start and wizard_data.dates.end %}
+                        <div class="mt-1">
+                            <strong>Период:</strong> с {{ wizard_data.dates.start }} по {{ wizard_data.dates.end }}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mt-2">
+                            <a href="/search" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit me-1"></i>Изменить параметры
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Filters Sidebar -->
+        <aside class="col-lg-3">
+            <div class="filter-sidebar shadow-sm">
+                <form id="filters-form">
+                    <!-- Search by Name -->
+                    <div class="filter-group">
+                        <div class="input-group">
+                            <input type="search" id="search-query" name="query" class="form-control" placeholder="Поиск по названию...">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        </div>
+                    </div>
+
+                    <!-- Destination -->
+                    <div class="filter-group">
+                        <h5>Направление</h5>
+                        <select id="country-select" name="country" class="form-select mb-2">
+                            <option value="">Все страны</option>
+                            {% for country in countries %}
+                            <option value="{{ country }}" {% if filters.country == country %}selected{% endif %}>{{ country }}</option>
+                            {% endfor %}
+                        </select>
+                        <select id="city-select" name="city" class="form-select" disabled>
+                            <option value="">Выберите город</option>
+                        </select>
+                    </div>
+
+                    <!-- Dates -->
+                    <div class="filter-group">
+                        <h5>Даты поездки</h5>
+                        <input type="date" id="start-date" name="start_date" class="form-control" min="{{ now.strftime('%Y-%m-%d') }}">
+                    </div>
+
+                    <!-- Duration -->
+                    <div class="filter-group">
+                        <h5>Количество дней</h5>
+                        <div id="duration-slider"></div>
+                        <div class="slider-values">
+                            <span id="duration-min">1</span>
+                            <span id="duration-max">30</span>
+                        </div>
+                        <input type="hidden" id="duration_min" name="duration_min">
+                        <input type="hidden" id="duration_max" name="duration_max">
+                    </div>
+                    
+                    <!-- Tourists -->
+                    <div class="filter-group">
+                        <h5>Количество туристов</h5>
+                        <input type="number" id="tourists-count" name="tourists" class="form-control" value="2" min="1">
+                    </div>
+
+                    <!-- Price -->
+                    <div class="filter-group">
+                        <h5>Цена (₽)</h5>
+                        <div id="price-slider"></div>
+                        <div class="slider-values">
+                            <span id="price-min">0</span>
+                            <span id="price-max">500000</span>
+                        </div>
+                        <input type="hidden" id="price_min" name="price_min">
+                        <input type="hidden" id="price_max" name="price_max">
+                    </div>
+                    
+                    <!-- Hotel Stars -->
+                    <div class="filter-group">
+                        <h5>Звездность отеля</h5>
+                        <div class="d-flex justify-content-between mb-2">
+                            <button type="button" id="select-all-stars" class="btn btn-sm btn-outline-secondary">Выбрать все</button>
+                            <button type="button" id="clear-stars" class="btn btn-sm btn-outline-secondary">Очистить</button>
+                        </div>
+                        <div class="stars-filter">
+                            {% for i in range(5, 0, -1) %}
+                            <div class="form-check stars-item">
+                                <input class="form-check-input" type="checkbox" name="stars" value="{{i}}" id="stars-{{i}}">
+                                <label class="form-check-label stars-label" for="stars-{{i}}">
+                                    {% for _ in range(i) %}<i class="fas fa-star text-warning"></i>{% endfor %}
+                                    {% for _ in range(5-i) %}<i class="far fa-star text-muted"></i>{% endfor %}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div id="stars-counter" class="mt-2 text-muted small">Выбрано: <span>0</span> из 5</div>
+                    </div>
+                    
+                    <!-- Meal Type -->
+                    <div class="filter-group">
+                        <h5>Тип питания</h5>
+                        {% set meal_types = {"RO": "Без питания", "BB": "Завтраки", "HB": "Полупансион", "FB": "Полный пансион", "AI": "Все включено", "UAI": "Ультра все включено"} %}
+                        {% set meal_icons = {
+                            "RO": "fas fa-times-circle",
+                            "BB": "fas fa-coffee", 
+                            "HB": "fas fa-utensils", 
+                            "FB": "fas fa-utensils fa-fw", 
+                            "AI": "fas fa-glass-cheers", 
+                            "UAI": "fas fa-crown"
+                        } %}
+                        
+                        <div class="meal-type-filter">
+                            <div class="form-check meal-option">
+                                <input class="form-check-input" type="radio" name="meal_type" id="meal-any" value="" checked>
+                                <label class="form-check-label d-flex align-items-center" for="meal-any">
+                                    <span class="meal-icon"><i class="fas fa-globe"></i></span>
+                                    <span>Любой тип питания</span>
+                                </label>
+                            </div>
+                            {% for code, name in meal_types.items() %}
+                            <div class="form-check meal-option">
+                                <input class="form-check-input" type="radio" name="meal_type" id="meal-{{code}}" value="{{code}}">
+                                <label class="form-check-label d-flex align-items-center" for="meal-{{code}}">
+                                    <span class="meal-icon"><i class="{{meal_icons[code]}}"></i></span>
+                                    <span>{{name}} <small class="text-muted">({{code}})</small></span>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Tour Types -->
+                    <div class="filter-group">
+                        <h5>Типы туров</h5>
+                        {% for type in tour_types %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="tour_type" value="{{ type.id }}" id="type-{{type.id}}">
+                            <label class="form-check-label" for="type-{{type.id}}">{{ type.name }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Promotions -->
+                    <div class="filter-group">
+                        <h5>Акции</h5>
+                        <select class="form-select" name="promotion">
+                            <option value="">Все акции</option>
+                            {% for promo in promotions %}
+                            <option value="{{ promo.id }}" {% if filters.promotion and filters.promotion == promo.id %}selected{% endif %}>{{ promo.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Применить</button>
+                        <button type="reset" class="btn btn-outline-secondary">Сбросить</button>
+                    </div>
+                </form>
+            </div>
+        </aside>
+        {% endif %}
+
+        <!-- Tours List -->
+        <main class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h4 mb-0">Все туры (<span id="tours-count">{{ tours|length }}</span>)</h2>
+                <div class="d-flex align-items-center">
+                    <select id="sort-by" name="sort_by" class="form-select form-select-sm me-3" style="width: auto;">
+                        <option value="popularity">По популярности</option>
+                        <option value="price_asc">Сначала дешевые</option>
+                        <option value="price_desc">Сначала дорогие</option>
+                        <option value="rating">По рейтингу</option>
+                        <option value="date">По дате</option>
+                    </select>
+                    <div class="view-switcher btn-group">
+                        <button class="btn active" id="grid-view-btn" title="Сетка"><i class="fas fa-th"></i></button>
+                        <button class="btn" id="list-view-btn" title="Список"><i class="fas fa-list"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tours-grid" class="row g-4 row-cols-1 row-cols-md-2 row-cols-xl-3">
+                {% from "components/tour-card.html" import tour_card with context %}
+                {% for tour in tours %}
+                    <div class="col">
+                        {{ tour_card(tour) }}
+                    </div>
+                {% endfor %}
+            </div>
+            <div id="tours-placeholder" class="text-center p-5 d-none">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+            </div>
+            <div id="no-results" class="text-center p-5 d-none">
+                <h4>Туры не найдены</h4>
+                <p>Попробуйте изменить параметры фильтра.</p>
+            </div>
+
+
+            <!-- Pagination -->
+            <nav aria-label="Page navigation" class="mt-5">
+                <ul class="pagination justify-content-center" id="pagination">
+                    {% if total_pages > 1 %}
+                        {% if page > 1 %}
+                            <li class="page-item"><a class="page-link" href="#" data-page="{{ page - 1 }}">‹</a></li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">‹</span></li>
+                        {% endif %}
+
+                        {% for p in range(1, total_pages + 1) %}
+                            <li class="page-item {% if p == page %}active{% endif %}">
+                                <a class="page-link" href="#" data-page="{{ p }}">{{ p }}</a>
+                            </li>
+                        {% endfor %}
+                        
+                        {% if page < total_pages %}
+                            <li class="page-item"><a class="page-link" href="#" data-page="{{ page + 1 }}">›</a></li>
+                        {% else %}
+                             <li class="page-item disabled"><span class="page-link">›</span></li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+            </nav>
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- UTILS ---
+    const debounce = (func, delay) => {
+        let timeout;
+        return (...args) => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), delay);
+        };
+    };
+
+    // --- STATE & ELEMENTS ---
+    const filtersForm = document.getElementById('filters-form');
+    const toursGrid = document.getElementById('tours-grid');
+    const toursPlaceholder = document.getElementById('tours-placeholder');
+    const noResults = document.getElementById('no-results');
+    const toursCountEl = document.getElementById('tours-count');
+    const paginationEl = document.getElementById('pagination');
+    let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+
+    // Hotel Stars Filter functionality
+    const starsCheckboxes = document.querySelectorAll('input[name="stars"]');
+    const starsCounter = document.querySelector('#stars-counter span');
+    const selectAllStarsBtn = document.getElementById('select-all-stars');
+    const clearStarsBtn = document.getElementById('clear-stars');
+
+    // Update stars counter
+    function updateStarsCounter() {
+        const checkedCount = document.querySelectorAll('input[name="stars"]:checked').length;
+        starsCounter.textContent = checkedCount;
+        
+        // Toggle buttons state based on selection
+        if (checkedCount === 5) {
+            selectAllStarsBtn.disabled = true;
+            clearStarsBtn.disabled = false;
+        } else if (checkedCount === 0) {
+            selectAllStarsBtn.disabled = false;
+            clearStarsBtn.disabled = true;
+        } else {
+            selectAllStarsBtn.disabled = false;
+            clearStarsBtn.disabled = false;
+        }
+    }
+
+    // Add event listeners for stars checkboxes
+    starsCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            updateStarsCounter();
+        });
+    });
+
+    // Select all stars button
+    selectAllStarsBtn.addEventListener('click', () => {
+        starsCheckboxes.forEach(checkbox => {
+            checkbox.checked = true;
+        });
+        updateStarsCounter();
+        fetchTours();
+    });
+
+    // Clear all stars button
+    clearStarsBtn.addEventListener('click', () => {
+        starsCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        updateStarsCounter();
+        fetchTours();
+    });
+
+    // Initialize stars counter
+    updateStarsCounter();
+
+    // Meal Type Filter animations
+    const mealOptions = document.querySelectorAll('.meal-option');
+    mealOptions.forEach(option => {
+        const radio = option.querySelector('input[type="radio"]');
+        // Initialize active state
+        if (radio.checked) {
+            option.classList.add('active');
+        }
+        
+        radio.addEventListener('change', () => {
+            // Remove active class from all options
+            mealOptions.forEach(opt => opt.classList.remove('active'));
+            // Add active class to selected option
+            if (radio.checked) {
+                option.classList.add('active');
+            }
+        });
+    });
+
+    // --- SLIDERS ---
+    const priceSlider = document.getElementById('price-slider');
+    const durationSlider = document.getElementById('duration-slider');
+
+    if (priceSlider) {
+        noUiSlider.create(priceSlider, {
+            start: [0, 500000],
+            connect: true,
+            step: 1000,
+            range: { 'min': 0, 'max': 500000 },
+            format: { to: (v) => Math.round(v), from: (v) => Math.round(v) }
+        });
+        priceSlider.noUiSlider.on('update', (values) => {
+            document.getElementById('price-min').textContent = values[0];
+            document.getElementById('price-max').textContent = values[1];
+            document.getElementById('price_min').value = values[0];
+            document.getElementById('price_max').value = values[1];
+        });
+        priceSlider.noUiSlider.on('change', fetchTours);
+    }
+    
+    if (durationSlider) {
+        noUiSlider.create(durationSlider, {
+            start: [1, 30],
+            connect: true,
+            step: 1,
+            range: { 'min': 1, 'max': 30 },
+            format: { to: (v) => Math.round(v), from: (v) => Math.round(v) }
+        });
+        durationSlider.noUiSlider.on('update', (values) => {
+            document.getElementById('duration-min').textContent = values[0];
+            document.getElementById('duration-max').textContent = values[1];
+            document.getElementById('duration_min').value = values[0];
+            document.getElementById('duration_max').value = values[1];
+        });
+        durationSlider.noUiSlider.on('change', fetchTours);
+    }
+
+    // --- FETCH & RENDER ---
+    async function fetchTours() {
+        toursGrid.innerHTML = '';
+        noResults.classList.add('d-none');
+        toursPlaceholder.classList.remove('d-none');
+
+        const formData = new FormData(filtersForm);
+        const params = new URLSearchParams();
+        
+        // Process form data correctly
+        for (const [key, value] of formData.entries()) {
+            // Special handling for stars (checkboxes can have multiple values)
+            if (key === 'stars') {
+                // Add each star value separately to maintain array format
+                params.append(key, value);
+            } else if (value !== '' && value !== null) {
+                // Add other non-empty params
+                params.append(key, value);
+            }
+        }
+        
+        // Add slider values if they weren't updated by form
+        params.set('price_min', document.getElementById('price_min').value);
+        params.set('price_max', document.getElementById('price_max').value);
+        params.set('duration_min', document.getElementById('duration_min').value);
+        params.set('duration_max', document.getElementById('duration_max').value);
+        params.set('sort_by', document.getElementById('sort-by').value);
+
+        // Remove empty promotion param to avoid 422
+        if (params.get('promotion') === '') {
+            params.delete('promotion');
+        }
+
+        // Remove empty params
+        for (const [key, value] of [...params.entries()]) {
+            if (value === '' || value === null) {
+                params.delete(key);
+            }
+        }
+
+        // Debug output - uncomment if needed to diagnose issues
+        console.log('API Request params:', params.toString());
+
+        const url = `/api/tours?${params.toString()}`;
+        const historyUrl = `/tours?${params.toString()}`;
+        
+        history.pushState({}, '', historyUrl);
+
+        try {
+            const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+            if (!response.ok) throw new Error('Network response was not ok');
+            const data = await response.json();
+
+            // Debug output - uncomment if needed to diagnose issues
+            console.log('API Response:', data);
+
+            toursPlaceholder.classList.add('d-none');
+            renderTours(data.tours);
+            renderPagination(data.pagination);
+            toursCountEl.textContent = data.pagination.total_items;
+            
+            if (data.tours.length === 0) {
+                noResults.classList.remove('d-none');
+            }
+
+        } catch (error) {
+            console.error("Fetch error:", error);
+            toursPlaceholder.classList.add('d-none');
+            noResults.classList.remove('d-none');
+            noResults.innerHTML = '<p>Произошла ошибка при загрузке туров.</p>';
+        }
+    }
+
+    function renderTours(tours) {
+        toursGrid.innerHTML = tours.map(tour => `
+            <div class="col">
+                <div class="tour-card shadow-sm h-100" data-tour-id="${tour.id}">
+                    <div class="tour-card__image">
+                        <img class="img-fluid lazy-image" src="${tour.image_url || '/static/images/placeholder.jpg'}" alt="${tour.name}">
+                        ${tour.discount_percent ? `<div class="tour-card__discount bg-accent">-${tour.discount_percent}%</div>` : ''}
+                        <button class="btn-icon tour-card__favorite ${favorites.includes(tour.id) ? 'active' : ''}" title="В избранное">
+                            <i class="far fa-heart"></i><i class="fas fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="tour-card__content">
+                        <div class="tour-card__location">${tour.city}, ${tour.country}</div>
+                        <h3 class="tour-card__title">${tour.name}</h3>
+                        <div class="d-flex align-items-center mb-2 justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="star-rating me-2" style="--rating: ${tour.rating || 0};"></div>
+                                <span class="text-muted">(${tour.reviews_count || 0})</span>
+                            </div>
+                            ${renderHotelStars(tour.stars)}
+                        </div>
+                        
+                        <div class="d-flex align-items-center mb-2">
+                            <p class="tour-card__details mb-0">${tour.duration_days} дней / ${tour.duration_nights} ночей</p>
+                            ${renderMealType(tour.meal_type)}
+                        </div>
+                        
+                        <div class="tour-card__footer">
+                            <div class="tour-card__price">
+                                 <span class="tour-card__current-price">${new Intl.NumberFormat('ru-RU').format(tour.base_price)} ₽</span>
+                            </div>
+                            <div class="tour-card__actions">
+                                <a href="/tours/${tour.id}" class="btn btn-sm btn-outline-primary">Подробнее</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    // Function to render hotel stars
+    function renderHotelStars(stars) {
+        if (!stars) return '';
+        
+        let starsHtml = '<div class="hotel-stars">';
+        for (let i = 0; i < stars; i++) {
+            starsHtml += '<i class="fas fa-star text-warning"></i>';
+        }
+        starsHtml += '</div>';
+        return starsHtml;
+    }
+    
+    // Function to render meal type badge
+    function renderMealType(mealType) {
+        if (!mealType) return '';
+        
+        const mealTypeLabels = {
+            "RO": "Без питания",
+            "BB": "Завтраки",
+            "HB": "Полупансион",
+            "FB": "Полный пансион",
+            "AI": "Все включено",
+            "UAI": "Ультра все включено"
+        };
+        
+        const mealTypeIcons = {
+            "RO": "fas fa-times-circle",
+            "BB": "fas fa-coffee",
+            "HB": "fas fa-utensils",
+            "FB": "fas fa-utensils fa-fw",
+            "AI": "fas fa-glass-cheers",
+            "UAI": "fas fa-crown"
+        };
+        
+        return `
+            <div class="ms-auto">
+                <span class="badge bg-light text-dark meal-badge" title="${mealTypeLabels[mealType] || mealType}">
+                    <i class="${mealTypeIcons[mealType] || 'fas fa-utensils'}"></i>
+                    ${mealType}
+                </span>
+            </div>
+        `;
+    }
+
+    function renderPagination(pagination) {
+        if (!pagination || !pagination.total_pages || pagination.total_pages <= 1) {
+            paginationEl.innerHTML = '';
+            return;
+        }
+        
+        let html = '';
+        const currentPage = pagination.current_page;
+        const totalPages = pagination.total_pages;
+        
+        // Previous button
+        if (currentPage > 1) {
+            html += `<li class="page-item"><a class="page-link" href="#" data-page="${currentPage - 1}">‹</a></li>`;
+        } else {
+            html += `<li class="page-item disabled"><span class="page-link">‹</span></li>`;
+        }
+        
+        // Page numbers
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === currentPage) {
+                html += `<li class="page-item active"><span class="page-link">${i}</span></li>`;
+            } else {
+                html += `<li class="page-item"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
+            }
+        }
+        
+        // Next button
+        if (currentPage < totalPages) {
+            html += `<li class="page-item"><a class="page-link" href="#" data-page="${currentPage + 1}">›</a></li>`;
+        } else {
+            html += `<li class="page-item disabled"><span class="page-link">›</span></li>`;
+        }
+        
+        paginationEl.innerHTML = html;
+        
+        // Add event listeners to pagination links
+        paginationEl.querySelectorAll('.page-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const page = parseInt(e.target.dataset.page, 10);
+                if (page) {
+                    const currentParams = new URLSearchParams(window.location.search);
+                    currentParams.set('page', page);
+                    window.history.pushState({}, '', `?${currentParams.toString()}`);
+                    fetchTours();
+                }
+            });
+        });
+    }
+
+    // --- EVENT LISTENERS ---
+    filtersForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        fetchTours();
+    });
+
+    filtersForm.addEventListener('reset', () => {
+        // Reset sliders
+        priceSlider.noUiSlider.reset();
+        durationSlider.noUiSlider.reset();
+        
+        // Reset radio buttons (meal type)
+        document.getElementById('meal-any').checked = true;
+        mealOptions.forEach(opt => opt.classList.remove('active'));
+        document.querySelector('.meal-option:first-child').classList.add('active');
+        
+        // Reset checkboxes (stars, tour types)
+        filtersForm.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        
+        // Update stars counter
+        updateStarsCounter();
+        
+        // Delay to ensure form reset completes before fetching
+        setTimeout(fetchTours, 10);
+    });
+
+    document.getElementById('search-query').addEventListener('input', debounce(fetchTours, 500));
+    document.getElementById('sort-by').addEventListener('change', fetchTours);
+
+    filtersForm.querySelectorAll('input[type="checkbox"], input[type="radio"], select').forEach(el => {
+        el.addEventListener('change', fetchTours);
+    });
+
+    // View switcher
+    document.getElementById('grid-view-btn').addEventListener('click', () => {
+        toursGrid.classList.remove('list-view');
+        toursGrid.classList.replace('row-cols-1', 'row-cols-xl-3');
+        document.getElementById('grid-view-btn').classList.add('active');
+        document.getElementById('list-view-btn').classList.remove('active');
+    });
+
+    document.getElementById('list-view-btn').addEventListener('click', () => {
+        toursGrid.classList.add('list-view');
+        toursGrid.classList.replace('row-cols-xl-3', 'row-cols-1');
+        document.getElementById('list-view-btn').classList.add('active');
+        document.getElementById('grid-view-btn').classList.remove('active');
+    });
+
+    // Favorites
+    toursGrid.addEventListener('click', e => {
+        const favoriteBtn = e.target.closest('.tour-card__favorite');
+        if (favoriteBtn) {
+            e.preventDefault();
+            const card = favoriteBtn.closest('.tour-card');
+            const tourId = parseInt(card.dataset.tourId, 10);
+            if (favorites.includes(tourId)) {
+                favorites = favorites.filter(id => id !== tourId);
+                favoriteBtn.classList.remove('active');
+            } else {
+                favorites.push(tourId);
+                favoriteBtn.classList.add('active');
+            }
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+        }
+    });
+
+});
+</script>
+{% endblock %} 

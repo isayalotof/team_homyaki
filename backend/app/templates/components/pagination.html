@@ -1,0 +1,60 @@
+{% macro pagination(page, total_pages, base_url, class_name="") %}
+<nav class="pagination-container {{ class_name }}" aria-label="Навигация по страницам">
+    <ul class="pagination justify-content-center">
+        <!-- Previous page button -->
+        <li class="page-item {% if page == 1 %}disabled{% endif %}">
+            <a class="page-link" href="{{ base_url }}?page={{ page - 1 }}{% for key, value in request.query_params.items() %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Предыдущая">
+                <span aria-hidden="true"><i class="fas fa-chevron-left"></i></span>
+            </a>
+        </li>
+        
+        <!-- First page -->
+        {% if page > 3 %}
+        <li class="page-item">
+            <a class="page-link" href="{{ base_url }}?page=1{% for key, value in request.query_params.items() %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">1</a>
+        </li>
+        
+        <!-- Ellipsis if needed -->
+        {% if page > 4 %}
+        <li class="page-item disabled">
+            <span class="page-link">...</span>
+        </li>
+        {% endif %}
+        {% endif %}
+        
+        <!-- Page numbers -->
+        {% for p in range(max(1, page - 2), min(total_pages + 1, page + 3)) %}
+        <li class="page-item {% if p == page %}active{% endif %}">
+            <a class="page-link" href="{{ base_url }}?page={{ p }}{% for key, value in request.query_params.items() %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ p }}</a>
+        </li>
+        {% endfor %}
+        
+        <!-- Ellipsis if needed -->
+        {% if page < total_pages - 2 %}
+        <li class="page-item disabled">
+            <span class="page-link">...</span>
+        </li>
+        {% endif %}
+        
+        <!-- Last page -->
+        {% if page < total_pages - 1 %}
+        <li class="page-item">
+            <a class="page-link" href="{{ base_url }}?page={{ total_pages }}{% for key, value in request.query_params.items() %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ total_pages }}</a>
+        </li>
+        {% endif %}
+        
+        <!-- Next page button -->
+        <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+            <a class="page-link" href="{{ base_url }}?page={{ page + 1 }}{% for key, value in request.query_params.items() %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Следующая">
+                <span aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+            </a>
+        </li>
+    </ul>
+    
+    {% if total_pages > 0 %}
+    <div class="pagination-info text-center mt-2">
+        <small class="text-muted">Страница {{ page }} из {{ total_pages }}</small>
+    </div>
+    {% endif %}
+</nav>
+{% endmacro %} 

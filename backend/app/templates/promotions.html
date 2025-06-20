@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Акции и спецпредложения{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12 text-center mb-4">
+            <h1>Акции и спецпредложения</h1>
+            <p class="lead">Воспользуйтесь нашими лучшими предложениями для незабываемых путешествий!</p>
+        </div>
+    </div>
+
+    <div class="row gy-4">
+        {% if promotions %}
+            {% for promo in promotions %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm promotion-card">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ promo.name }}</h5>
+                        <p class="card-text text-muted">{{ promo.description }}</p>
+                        
+                        <div class="mt-auto">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">
+                                    <strong>Скидка:</strong> 
+                                    {% if promo.discount_type.value == 'percentage' %}
+                                        {{ "%.0f"|format(promo.value) }}%
+                                    {% else %}
+                                        {{ "%.0f"|format(promo.value) }} ₽
+                                    {% endif %}
+                                </li>
+                                {% if promo.target_city %}
+                                <li class="list-group-item">
+                                    <strong>Направление:</strong> {{ promo.target_city }}
+                                </li>
+                                {% endif %}
+                                {% if promo.valid_from and promo.valid_to %}
+                                <li class="list-group-item">
+                                    <strong>Действует:</strong> с {{ promo.valid_from.strftime('%d.%m.%Y') }} по {{ promo.valid_to.strftime('%d.%m.%Y') }}
+                                </li>
+                                {% endif %}
+                            </ul>
+                            <a href="/tours?city={{ promo.target_city }}" class="btn btn-primary mt-3 w-100">Найти туры</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center">
+                <p>На данный момент активных акций нет. Загляните позже!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,30 @@
+{% macro tour_card(tour, class_name="") %}
+<div class="card tour-card h-100 shadow-sm">
+    <a href="{{ url_for('tour_details', tour_id=tour.id) }}">
+        <img src="{{ tour.image_url or '/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ tour.name }}">
+    </a>
+    <div class="card-body d-flex flex-column">
+        <h5 class="card-title">{{ tour.name }}</h5>
+        <p class="card-text text-muted"><i class="fas fa-map-marker-alt me-2"></i>{{ tour.country }}, {{ tour.city }}</p>
+        
+        <div class="mt-auto">
+            <div class="d-flex justify-content-between align-items-center">
+                {% if tour.discounted_price %}
+                <div>
+                    <span class="text-danger h5">{{ "{:,.0f}".format(tour.discounted_price) }} ₽</span>
+                    <small class="text-muted text-decoration-line-through ms-1">{{ "{:,.0f}".format(tour.base_price) }} ₽</small>
+                </div>
+                {% else %}
+                <span class="h5">{{ "{:,.0f}".format(tour.base_price) }} ₽</span>
+                {% endif %}
+                <a href="{{ url_for('tour_details', tour_id=tour.id) }}" class="btn btn-sm btn-primary">Подробнее</a>
+            </div>
+        </div>
+    </div>
+    {% if tour.discount_promo_name %}
+    <div class="badge bg-danger text-white position-absolute" style="top: 0.5rem; right: 0.5rem">
+        {{ tour.discount_promo_name }}
+    </div>
+    {% endif %}
+</div>
+{% endmacro %} 

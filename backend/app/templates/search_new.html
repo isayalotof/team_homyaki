@@ -1,0 +1,550 @@
+{% extends "base.html" %}
+
+{% block title %}Мастер поиска туров - Путешествуй по России{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+<style>
+    /* Стили для мастера поиска */
+    .search-wizard {
+        background-color: #fff;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    
+    .wizard-step {
+        display: none;
+        padding: 2rem;
+    }
+    
+    .wizard-progress {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem 2rem;
+        border-bottom: 1px solid #e9ecef;
+        background-color: #f8f9fa;
+        border-top-left-radius: 0.5rem;
+        border-top-right-radius: 0.5rem;
+    }
+    
+    .step-indicator {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+        flex: 1;
+        cursor: pointer;
+    }
+    
+    .step-indicator:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        background: #e9ecef;
+        height: 2px;
+        width: 100%;
+        top: 20px;
+        left: 50%;
+        z-index: -1;
+    }
+    
+    .step-indicator.completed:not(:last-child)::after {
+        background: #0d6efd;
+    }
+    
+    .step-number {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    
+    .step-indicator.active .step-number {
+        background-color: #0d6efd;
+        color: white;
+    }
+    
+    .step-indicator.completed .step-number {
+        background-color: #198754;
+        color: white;
+    }
+    
+    .step-indicator.active .step-title {
+        color: #0d6efd;
+        font-weight: bold;
+    }
+    
+    .step-indicator.completed .step-title {
+        color: #198754;
+    }
+    
+    .destination-container {
+        min-height: 200px;
+        border: 2px dashed #dee2e6;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .destination-container.drag-over {
+        background-color: rgba(13, 110, 253, 0.1);
+        border-color: #0d6efd;
+    }
+    
+    .destination-container-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .destination-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        margin-bottom: 0.5rem;
+        cursor: grab;
+        transition: all 0.2s ease;
+    }
+    
+    .destination-item:hover {
+        border-color: #0d6efd;
+        box-shadow: 0 0.125rem 0.25rem rgba(13, 110, 253, 0.15);
+    }
+    
+    .destination-item.dragging {
+        opacity: 0.5;
+        border-style: dashed;
+    }
+    
+    .destination-thumb {
+        width: 60px;
+        height: 45px;
+        border-radius: 0.25rem;
+        background-size: cover;
+        background-position: center;
+        margin-right: 1rem;
+    }
+    
+    .destination-info {
+        flex-grow: 1;
+    }
+    
+    .destination-info h5 {
+        margin-bottom: 0.25rem;
+        font-size: 1rem;
+    }
+    
+    .destination-actions {
+        margin-left: 0.5rem;
+    }
+    
+    .route-visualization {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1.5rem;
+        background-color: #f8f9fa;
+        border-radius: 0.5rem;
+    }
+    
+    .route-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .route-point {
+        position: relative;
+        width: 50px;
+        height: 50px;
+        margin-right: 1rem;
+    }
+    
+    .route-point-number {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background-color: #0d6efd;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: bold;
+        z-index: 1;
+    }
+    
+    .route-point-icon {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background-color: #fff;
+        border: 2px solid #0d6efd;
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .route-connector {
+        width: 2px;
+        height: 30px;
+        background-color: #0d6efd;
+        margin: 0.25rem 0;
+    }
+    
+    .counter-control {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 120px;
+        background: #f8f9fa;
+        border-radius: 0.375rem;
+        overflow: hidden;
+    }
+    
+    .counter-btn {
+        width: 36px;
+        height: 36px;
+        border: none;
+        background: transparent;
+        color: #0d6efd;
+        font-size: 1.25rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .counter-btn:disabled {
+        color: #adb5bd;
+        cursor: not-allowed;
+    }
+    
+    .counter-value {
+        flex-grow: 1;
+        text-align: center;
+        font-weight: bold;
+    }
+    
+    .budget-slider {
+        width: 100%;
+    }
+    
+    .quick-dates {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+    
+    .wizard-navigation {
+        padding: 1.5rem 2rem;
+        border-top: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    /* Адаптивность */
+    @media (max-width: 767px) {
+        .wizard-progress {
+            overflow-x: auto;
+            padding: 1rem;
+        }
+        
+        .step-title {
+            font-size: 0.75rem;
+        }
+        
+        .wizard-step {
+            padding: 1.5rem 1rem;
+        }
+        
+        .wizard-navigation {
+            padding: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="text-center mb-4">Создайте свой идеальный маршрут</h1>
+    <p class="text-center mb-5">Сконструируйте индивидуальный тур по России, выбрав города и достопримечательности, которые хотите посетить</p>
+
+    <div class="search-wizard">
+        <!-- Прогресс бар с шагами -->
+        <div class="wizard-progress">
+            <div class="step-indicator active" data-step="1">
+                <div class="step-number">1</div>
+                <div class="step-title">Маршрут</div>
+            </div>
+            <div class="step-indicator" data-step="2">
+                <div class="step-number">2</div>
+                <div class="step-title">Даты</div>
+            </div>
+            <div class="step-indicator" data-step="3">
+                <div class="step-number">3</div>
+                <div class="step-title">Путешественники</div>
+            </div>
+            <div class="step-indicator" data-step="4">
+                <div class="step-number">4</div>
+                <div class="step-title">Предпочтения</div>
+            </div>
+        </div>
+        
+        <!-- Мастер поиска -->
+        <div id="search-wizard">
+            <!-- Шаг 1: Выбор маршрута -->
+            <div id="step-1" class="wizard-step">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <h3 class="mb-3">Выберите города и достопримечательности</h3>
+                        
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text" id="destination-search" class="form-control" placeholder="Поиск городов и достопримечательностей">
+                        </div>
+                        
+                        <div id="available-destinations" class="destination-container">
+                            <div class="destination-container-header">
+                                <h5 class="mb-0">Доступные места</h5>
+                            </div>
+                            <!-- Здесь будут доступные города и достопримечательности -->
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-6">
+                        <h3 class="mb-3">Ваш маршрут</h3>
+                        
+                        <div id="selected-destinations" class="destination-container">
+                            <div class="destination-container-header">
+                                <h5 class="mb-0">Выбранные места</h5>
+                                <button id="clear-route" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i> Очистить
+                                </button>
+                            </div>
+                            <!-- Здесь будут выбранные города и достопримечательности -->
+                        </div>
+                        
+                        <div id="route-visualization" class="route-visualization mt-4">
+                            <div class="text-center text-muted">Добавьте места в ваш маршрут, чтобы увидеть его здесь</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="step-1-error" class="alert alert-danger mt-3" style="display: none;"></div>
+            </div>
+
+            <!-- Шаг 2: Выбор дат -->
+            <div id="step-2" class="wizard-step">
+                <h3 class="mb-4">Выберите даты поездки</h3>
+                
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="mb-4">
+                            <label for="date-range" class="form-label">Даты поездки</label>
+                            <input type="text" id="date-range" class="form-control form-control-lg" placeholder="Выберите даты">
+                        </div>
+                        
+                        <div class="quick-dates">
+                            <span class="me-2">Быстрый выбор:</span>
+                            <button type="button" class="btn btn-outline-primary quick-date-btn" data-days="3">3 дня</button>
+                            <button type="button" class="btn btn-outline-primary quick-date-btn" data-days="7">7 дней</button>
+                            <button type="button" class="btn btn-outline-primary quick-date-btn" data-days="10">10 дней</button>
+                            <button type="button" class="btn btn-outline-primary quick-date-btn" data-days="14">14 дней</button>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card mt-md-0 mt-4">
+                            <div class="card-body">
+                                <h5 class="card-title">Информация о поездке</h5>
+                                <p id="trip-duration" class="card-text">Длительность поездки: 0 дней</p>
+                                <p class="card-text text-muted small">
+                                    <i class="fas fa-info-circle"></i> Чтобы изменить длительность поездки, выберите другие даты начала и окончания тура
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="step-2-error" class="alert alert-danger mt-3" style="display: none;"></div>
+            </div>
+
+            <!-- Шаг 3: Информация о путешественниках -->
+            <div id="step-3" class="wizard-step">
+                <h3 class="mb-4">Количество путешественников и бюджет</h3>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="mb-3">Количество путешественников</h5>
+                        
+                        <div class="mb-4">
+                            <label class="form-label">Взрослые (от 18 лет)</label>
+                            <div id="adults-counter" class="counter-control">
+                                <button type="button" class="counter-btn minus-btn">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <span class="counter-value">2</span>
+                                <button type="button" class="counter-btn plus-btn">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label">Дети (до 18 лет)</label>
+                            <div id="children-counter" class="counter-control">
+                                <button type="button" class="counter-btn minus-btn">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <span class="counter-value">0</span>
+                                <button type="button" class="counter-btn plus-btn">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h5 class="mb-3">Бюджет</h5>
+                        
+                        <label for="budget-slider" class="form-label">Максимальный бюджет на человека</label>
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-primary me-2">от 20 000 ₽</span>
+                            <input type="range" class="form-range budget-slider" id="budget-slider" min="20000" max="200000" step="5000" value="50000">
+                            <span class="badge bg-primary ms-2">до 200 000 ₽</span>
+                        </div>
+                        <p class="text-center">Выбранный бюджет: <span id="budget-value">50 000 ₽</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Шаг 4: Предпочтения по туру -->
+            <div id="step-4" class="wizard-step">
+                <h3 class="mb-4">Предпочтения по туру</h3>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-4">
+                            <h5>Предпочитаемый транспорт</h5>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="transport" id="transport-train" value="train">
+                                <label class="form-check-label" for="transport-train">
+                                    <i class="fas fa-train me-2"></i> Поезд
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="transport" id="transport-plane" value="plane">
+                                <label class="form-check-label" for="transport-plane">
+                                    <i class="fas fa-plane me-2"></i> Самолет
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="transport" id="transport-bus" value="bus">
+                                <label class="form-check-label" for="transport-bus">
+                                    <i class="fas fa-bus me-2"></i> Автобус
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="transport" id="transport-any" value="any" checked>
+                                <label class="form-check-label" for="transport-any">
+                                    <i class="fas fa-random me-2"></i> Любой транспорт
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5>Дополнительные опции</h5>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="include-meals" checked>
+                                <label class="form-check-label" for="include-meals">
+                                    <i class="fas fa-utensils me-2"></i> Включить питание
+                                </label>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="include-excursions" checked>
+                                <label class="form-check-label" for="include-excursions">
+                                    <i class="fas fa-camera me-2"></i> Включить экскурсии
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="mb-4">
+                            <h5>Проживание</h5>
+                            <label for="accommodation-stars" class="form-label">Рейтинг отеля</label>
+                            <select class="form-select" id="accommodation-stars">
+                                <option value="2">2 звезды</option>
+                                <option value="3" selected>3 звезды</option>
+                                <option value="4">4 звезды</option>
+                                <option value="5">5 звезд</option>
+                            </select>
+                            
+                            <div class="mt-3">
+                                <label class="form-label">Тип проживания</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="accommodation-type" id="type-hotel" value="hotel" checked>
+                                    <label class="form-check-label" for="type-hotel">
+                                        <i class="fas fa-hotel me-2"></i> Отель
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="accommodation-type" id="type-hostel" value="hostel">
+                                    <label class="form-check-label" for="type-hostel">
+                                        <i class="fas fa-bed me-2"></i> Хостел
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="accommodation-type" id="type-apartment" value="apartment">
+                                    <label class="form-check-label" for="type-apartment">
+                                        <i class="fas fa-home me-2"></i> Апартаменты
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Навигация -->
+            <div class="wizard-navigation">
+                <button id="prev-step" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i> Назад
+                </button>
+                <button id="next-step" class="btn btn-primary">
+                    Далее <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+                <button id="submit-search" class="btn btn-success" style="display: none;">
+                    <i class="fas fa-search me-2"></i> Найти туры
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+<script src="/static/js/search-wizard.js"></script>
+{% endblock %} 

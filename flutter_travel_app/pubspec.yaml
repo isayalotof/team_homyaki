@@ -1,0 +1,34 @@
+name: flutter_travel_app
+description: Мобильное приложение для туристического сайта "Путешествуй по России"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.17.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.5
+  http: ^0.13.5
+  provider: ^6.0.5
+  cached_network_image: ^3.2.3
+  flutter_rating_bar: ^4.0.1
+  intl: ^0.18.0
+  shared_preferences: ^2.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Regular.ttf
+        - asset: assets/fonts/Roboto-Bold.ttf
+          weight: 700 

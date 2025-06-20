@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}Путешествуй по России - Часто задаваемые вопросы{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="mb-4">Часто задаваемые вопросы</h1>
+            
+            <div class="accordion" id="faqAccordion">
+                <!-- Бронирование туров -->
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <h2 class="h5 mb-0">Бронирование туров</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="accordion" id="bookingAccordion">
+                            <div class="accordion-item">
+                                <h3 class="accordion-header" id="headingOne">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                        Как забронировать тур на вашем сайте?
+                                    </button>
+                                </h3>
+                                <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#bookingAccordion">
+                                    <div class="accordion-body">
+                                        Для бронирования тура необходимо выбрать интересующий вас тур, нажать кнопку "Забронировать", заполнить форму с данными участников и оплатить бронь. После подтверждения бронирования вам на почту придет подтверждение с деталями тура.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h3 class="accordion-header" id="headingTwo">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                        Можно ли забронировать тур по телефону?
+                                    </button>
+                                </h3>
+                                <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#bookingAccordion">
+                                    <div class="accordion-body">
+                                        Да, вы можете забронировать тур, позвонив в наш офис по телефону +7 (495) 123-45-67. Наши менеджеры помогут вам выбрать подходящий тур и оформить бронирование.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h3 class="accordion-header" id="headingThree">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                        За сколько дней до начала тура нужно бронировать?
+                                    </button>
+                                </h3>
+                                <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#bookingAccordion">
+                                    <div class="accordion-body">
+                                        Мы рекомендуем бронировать туры заранее, особенно в высокий сезон. Оптимальный срок — за 2-3 месяца до начала тура. Однако у нас также есть предложения "горящих туров", которые можно забронировать за несколько дней до отправления.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Оплата -->
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <h2 class="h5 mb-0">Оплата</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="accordion" id="paymentAccordion">
+                            <div class="accordion-item">
+                                <h3 class="accordion-header" id="headingFour">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="true" aria-controls="collapseFour">
+                                        Какие способы оплаты вы принимаете?
+                                    </button>
+                                </h3>
+                                <div id="collapseFour" class="accordion-collapse collapse show" aria-labelledby="headingFour" data-bs-parent="#paymentAccordion">
+                                    <div class="accordion-body">
+                                        Мы принимаем оплату банковскими картами (Visa, MasterCard, МИР), банковским переводом, а также наличными в офисах компании. На сайте доступна оплата картой или электронными деньгами.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h3 class="accordion-header" id="headingFive">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                                        Можно ли оплатить тур в рассрочку?
+                                    </button>
+                                </h3>
+                                <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#paymentAccordion">
+                                    <div class="accordion-body">
+                                        Да, мы предлагаем возможность оплаты в рассрочку. Вы можете внести предоплату (обычно 30% от стоимости тура) и оплатить оставшуюся сумму за 14 дней до начала тура. Также у нас есть партнерские программы с банками, предлагающими туры в кредит.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Отмена и изменение бронирования -->
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <h2 class="h5 mb-0">Отмена и изменение бронирования</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="accordion" id="cancellationAccordion">
+                            <div class="accordion-item">
+                                <h3 class="accordion-header" id="headingSix">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix" aria-expanded="true" aria-controls="collapseSix">
+                                        Можно ли отменить бронирование?
+                                    </button>
+                                </h3>
+                                <div id="collapseSix" class="accordion-collapse collapse show" aria-labelledby="headingSix" data-bs-parent="#cancellationAccordion">
+                                    <div class="accordion-body">
+                                        Да, бронирование можно отменить, но условия возврата зависят от сроков отмены:
+                                        <ul>
+                                            <li>При отмене более чем за 30 дней до начала тура — возврат 90% стоимости</li>
+                                            <li>При отмене за 15-30 дней — возврат 70% стоимости</li>
+                                            <li>При отмене за 7-14 дней — возврат 50% стоимости</li>
+                                            <li>При отмене менее чем за 7 дней — возврат не предусмотрен</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h3 class="accordion-header" id="headingSeven">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSeven" aria-expanded="false" aria-controls="collapseSeven">
+                                        Можно ли изменить даты тура после бронирования?
+                                    </button>
+                                </h3>
+                                <div id="collapseSeven" class="accordion-collapse collapse" aria-labelledby="headingSeven" data-bs-parent="#cancellationAccordion">
+                                    <div class="accordion-body">
+                                        Изменение дат возможно при наличии свободных мест на выбранные даты. Если изменение происходит более чем за 14 дней до начала тура, это бесплатно. При более поздних изменениях может взиматься сбор в размере 5% от стоимости тура.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Организация туров -->
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h2 class="h5 mb-0">Организация туров</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="accordion" id="organizationAccordion">
+                            <div class="accordion-item">
+                                <h3 class="accordion-header" id="headingEight">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEight" aria-expanded="true" aria-controls="collapseEight">
+                                        Что включено в стоимость тура?
+                                    </button>
+                                </h3>
+                                <div id="collapseEight" class="accordion-collapse collapse show" aria-labelledby="headingEight" data-bs-parent="#organizationAccordion">
+                                    <div class="accordion-body">
+                                        В стоимость тура обычно включено: проживание в отеле выбранной категории, питание (согласно описанию тура), трансферы по программе, услуги гида, экскурсионная программа, указанная в описании тура, медицинская страховка. Дополнительно могут оплачиваться: авиабилеты, визы, дополнительные экскурсии, личные расходы.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h3 class="accordion-header" id="headingNine">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNine" aria-expanded="false" aria-controls="collapseNine">
+                                        Можно ли организовать индивидуальный тур?
+                                    </button>
+                                </h3>
+                                <div id="collapseNine" class="accordion-collapse collapse" aria-labelledby="headingNine" data-bs-parent="#organizationAccordion">
+                                    <div class="accordion-body">
+                                        Да, мы предлагаем услуги по организации индивидуальных туров. Вы можете выбрать направление, даты, категорию отеля и экскурсионную программу. Наши менеджеры помогут составить оптимальный маршрут и рассчитают стоимость тура.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h3 class="accordion-header" id="headingTen">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTen" aria-expanded="false" aria-controls="collapseTen">
+                                        Нужен ли загранпаспорт для туров по России?
+                                    </button>
+                                </h3>
+                                <div id="collapseTen" class="accordion-collapse collapse" aria-labelledby="headingTen" data-bs-parent="#organizationAccordion">
+                                    <div class="accordion-body">
+                                        Для туров по России загранпаспорт не требуется. Достаточно иметь внутренний паспорт гражданина РФ. Для детей до 14 лет необходимо свидетельство о рождении.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-5">
+                <h3 class="h5">Не нашли ответ на свой вопрос?</h3>
+                <p>Свяжитесь с нами по телефону <strong>+7 (495) 123-45-67</strong> или напишите на почту <strong>info@travel-russia.ru</strong></p>
+                <a href="/contacts" class="btn btn-primary">Связаться с нами</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

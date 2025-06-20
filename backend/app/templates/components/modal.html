@@ -1,0 +1,61 @@
+{% macro modal(id, title, size="", static_backdrop=false, centered=true, class_name="") %}
+<div class="modal fade {{ class_name }}" id="{{ id }}" tabindex="-1" aria-labelledby="{{ id }}Label" aria-hidden="true"
+    {% if static_backdrop %}data-bs-backdrop="static" data-bs-keyboard="false"{% endif %}
+    {% if centered %}data-bs-modal-centered="true"{% endif %}>
+    <div class="modal-dialog {% if size %}modal-{{ size }}{% endif %} {% if centered %}modal-dialog-centered{% endif %}">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="{{ id }}Label">{{ title }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {{ caller() }}
+            </div>
+            {% if footer is defined %}
+            <div class="modal-footer">
+                {{ footer }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro confirm_modal(id, title, message, confirm_text="Подтвердить", cancel_text="Отмена", confirm_class="btn-danger", confirm_action="", class_name="") %}
+<div class="modal fade {{ class_name }}" id="{{ id }}" tabindex="-1" aria-labelledby="{{ id }}Label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="{{ id }}Label">{{ title }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>{{ message }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ cancel_text }}</button>
+                <button type="button" class="btn {{ confirm_class }}" {% if confirm_action %}onclick="{{ confirm_action }}"{% endif %}>{{ confirm_text }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro alert_modal(id, title, message, button_text="OK", class_name="") %}
+<div class="modal fade {{ class_name }}" id="{{ id }}" tabindex="-1" aria-labelledby="{{ id }}Label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="{{ id }}Label">{{ title }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>{{ message }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">{{ button_text }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %} 

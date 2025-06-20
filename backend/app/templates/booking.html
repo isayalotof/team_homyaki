@@ -1,0 +1,506 @@
+{% extends "base.html" %}
+
+{% block title %}Бронирование тура - {{ tour.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .booking-wizard {
+        display: flex;
+        gap: 2rem;
+    }
+    .booking-main {
+        flex: 1;
+    }
+    .booking-sidebar {
+        width: 320px;
+        position: sticky;
+        top: 2rem;
+        align-self: flex-start;
+    }
+    .step {
+        display: none;
+    }
+    .step.active {
+        display: block;
+    }
+    .progress-bar {
+        height: 4px;
+    }
+    .progress {
+        height: 4px;
+    }
+    .step-indicators {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    .step-indicator {
+        flex-basis: 25%;
+        text-align: center;
+        position: relative;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div 
+    class="booking-wizard container my-5" 
+    id="booking-wizard"
+    data-tour-id="{{ tour.id }}"
+    data-base-price="{{ tour.base_price }}"
+>
+    <main class="booking-main">
+        <div class="card">
+            <div class="card-body">
+                <!-- Progress Bar -->
+                <div class="mb-4">
+                    <div class="step-indicators">
+                        <div class="step-indicator">1. Параметры</div>
+                        <div class="step-indicator">2. Туристы</div>
+                        <div class="step-indicator">3. Услуги</div>
+                        <div class="step-indicator">4. Оплата</div>
+                    </div>
+                    <div class="progress">
+                        <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+
+                <form id="booking-form" novalidate>
+                    <!-- Step 1: Tour Parameters -->
+                    <div id="step-1" class="step active">
+                        <h4 class="mb-4">Шаг 1: Выбор параметров тура</h4>
+                        
+                        <div class="mb-3">
+                            <label for="tour_dates" class="form-label">Даты тура</label>
+                            <select class="form-select" id="tour_dates" name="tour_dates">
+                                <!-- Example option, should be populated dynamically -->
+                                <option value="{{ tour.id }}">{{ tour.start_date.strftime('%d.%m.%Y') }} - {{ (tour.start_date + timedelta(days=tour.duration_days)).strftime('%d.%m.%Y') }}</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="tourists_count" class="form-label">Количество туристов (Доступно: {{ tour.available_count }})</label>
+                            <input type="number" class="form-control" id="tourists_count" name="tourists_count" value="1" min="1" max="{{ tour.available_count }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="hotel_tier" class="form-label">Тип размещения</label>
+                            <select class="form-select" id="hotel_tier" name="hotel_tier">
+                                <option value="standard" data-price-multiplier="1">Стандарт (включено в стоимость)</option>
+                                <option value="comfort" data-price-multiplier="1.2">Комфорт (+20%)</option>
+                                <option value="premium" data-price-multiplier="1.5">Премиум (+50%)</option>
+                            </select>
+                </div>
+                
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-primary" id="next-step-1">Далее</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2: Traveler's Data -->
+                    <div id="step-2" class="step">
+                        <h4 class="mb-4">Шаг 2: Данные путешествующих</h4>
+                        <div id="tourist-forms">
+                            <!-- Tourist forms will be dynamically inserted here -->
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary mb-3" id="add-tourist-btn">Добавить туриста</button>
+
+                        <h5 class="mt-4">Данные бронирующего</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="booker_full_name" class="form-label">ФИО</label>
+                                <input type="text" class="form-control" id="booker_full_name" value="{{ user.full_name or '' }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="booker_phone" class="form-label">Телефон</label>
+                                <input type="tel" class="form-control" id="booker_phone" value="{{ user.phone or '' }}" required>
+                            </div>
+                             <div class="col-12 mb-3">
+                                <label for="booker_email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="booker_email" value="{{ user.email or '' }}" required>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-secondary" id="prev-step-2">Назад</button>
+                            <button type="button" class="btn btn-primary" id="next-step-2">Далее</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3: Additional Services -->
+                    <div id="step-3" class="step">
+                        <h4 class="mb-4">Шаг 3: Дополнительные услуги</h4>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="insurance" name="extra_services" value="insurance" data-price="5000">
+                            <label class="form-check-label" for="insurance">
+                                Медицинская страховка (5 000 ₽/чел)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="transfer" name="extra_services" value="transfer" data-price="3000">
+                            <label class="form-check-label" for="transfer">
+                                Трансфер из аэропорта (3 000 ₽)
+                            </label>
+                        </div>
+                         <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="visa_support" name="extra_services" value="visa" data-price="10000">
+                            <label class="form-check-label" for="visa_support">
+                                Визовая поддержка (10 000 ₽/чел)
+                            </label>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-secondary" id="prev-step-3">Назад</button>
+                            <button type="button" class="btn btn-primary" id="next-step-3">Далее</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 4: Confirmation and Payment -->
+                    <div id="step-4" class="step">
+                        <h4 class="mb-4">Шаг 4: Подтверждение и оплата</h4>
+                        <div id="booking-summary">
+                            <!-- Booking summary will be generated here -->
+                        </div>
+                         <div class="form-check mt-4">
+                        <input class="form-check-input" type="checkbox" id="terms" required>
+                        <label class="form-check-label" for="terms">
+                                Я согласен с <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">правилами и условиями</a> бронирования.
+                        </label>
+                    </div>
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-secondary" id="prev-step-4">Назад</button>
+                            <button type="submit" class="btn btn-success" id="confirm-booking">Подтвердить и забронировать</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <aside class="booking-sidebar">
+        <div class="card">
+            <img src="{{ tour.image_url or '/static/images/placeholder.jpg' }}" class="card-img-top" alt="{{ tour.name }}">
+            <div class="card-body">
+                <h5 class="card-title">{{ tour.name }}</h5>
+                <p class="card-text text-muted">{{ tour.country }}, {{ tour.city }}</p>
+                <hr>
+                <div id="price-breakdown">
+                    <div class="d-flex justify-content-between">
+                        <span>Базовая стоимость:</span>
+                        <span id="sidebar-base-price">...</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Туристы:</span>
+                        <span id="sidebar-tourists-count">...</span>
+                    </div>
+                     <div class="d-flex justify-content-between">
+                        <span>Размещение:</span>
+                        <span id="sidebar-hotel-tier">...</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Доп. услуги:</span>
+                        <span id="sidebar-extras-price">...</span>
+                    </div>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between h5">
+                    <strong>Итого:</strong>
+                    <strong id="sidebar-total-price">...</strong>
+                </div>
+                 <div id="sidebar-discount-row" class="d-flex justify-content-between text-danger" style="display: none;">
+                    <span>Скидка:</span>
+                    <span id="sidebar-discount-amount">...</span>
+                </div>
+            </div>
+        </div>
+        <div class="card mt-3">
+             <div class="card-body">
+                 <h6 class="card-title">Поддержка клиентов</h6>
+                 <p class="card-text small">
+                     <i class="fas fa-phone me-2"></i> 8 (800) 555-35-35<br>
+                     <i class="fas fa-envelope me-2"></i> support@russia-travel.com
+                 </p>
+        </div>
+    </div>
+    </aside>
+</div>
+
+<!-- Terms Modal (already exists in base, can be removed if so) -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="termsModalLabel">Правила и условия бронирования</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Terms content -->
+                <p>Здесь будут подробные условия бронирования...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const wizard = document.getElementById('booking-wizard');
+    const steps = document.querySelectorAll('.step');
+    const progressBar = document.getElementById('progress-bar');
+    let currentStep = 1;
+
+    const tourBasePrice = parseFloat(wizard.dataset.basePrice);
+    const tourId = parseInt(wizard.dataset.tourId);
+
+    const bookingData = {
+        tour_id: tourId,
+        tourists_count: 1,
+        hotel_tier: 'standard',
+        hotel_multiplier: 1,
+        extra_services: [],
+        tourists: [],
+        booker: {}
+    };
+
+    const formatCurrency = (value) => new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', minimumFractionDigits: 0 }).format(value);
+
+    function updateStep(newStep) {
+        steps.forEach(step => step.classList.remove('active'));
+        document.getElementById(`step-${newStep}`).classList.add('active');
+        
+        const progress = (newStep / steps.length) * 100;
+        progressBar.style.width = `${progress}%`;
+        progressBar.setAttribute('aria-valuenow', progress);
+        
+        currentStep = newStep;
+    }
+    
+    // --- Step 1 ---
+    document.getElementById('next-step-1').addEventListener('click', () => {
+        bookingData.tourists_count = parseInt(document.getElementById('tourists_count').value);
+        const hotelSelect = document.getElementById('hotel_tier');
+        bookingData.hotel_tier = hotelSelect.value;
+        bookingData.hotel_multiplier = parseFloat(hotelSelect.options[hotelSelect.selectedIndex].dataset.priceMultiplier);
+        
+        updateTouristForms();
+        updatePrice();
+        updateStep(2);
+    });
+    
+    // --- Step 2 ---
+    document.getElementById('prev-step-2').addEventListener('click', () => updateStep(1));
+    document.getElementById('next-step-2').addEventListener('click', () => {
+        if (validateStep2()) {
+            // Save tourist data
+            updateStep(3);
+        }
+    });
+    document.getElementById('add-tourist-btn').addEventListener('click', () => {
+       const touristsCountInput = document.getElementById('tourists_count');
+       touristsCountInput.value = parseInt(touristsCountInput.value) + 1;
+       updateTouristForms();
+    });
+
+    // --- Step 3 ---
+    document.getElementById('prev-step-3').addEventListener('click', () => updateStep(2));
+    document.getElementById('next-step-3').addEventListener('click', () => {
+        const selectedServices = document.querySelectorAll('input[name="extra_services"]:checked');
+        bookingData.extra_services = Array.from(selectedServices).map(cb => ({
+            name: cb.value,
+            price: parseFloat(cb.dataset.price)
+        }));
+        updatePrice();
+        updateStep(4);
+        generateSummary();
+    });
+    
+    // --- Step 4 ---
+    document.getElementById('prev-step-4').addEventListener('click', () => updateStep(3));
+
+    // --- Tourist Forms ---
+    function updateTouristForms() {
+        const count = parseInt(document.getElementById('tourists_count').value) || 1;
+        const container = document.getElementById('tourist-forms');
+        container.innerHTML = '';
+        for (let i = 1; i <= count; i++) {
+            container.insertAdjacentHTML('beforeend', createTouristForm(i));
+        }
+    }
+    
+    function createTouristForm(index) {
+        return `
+        <div class="card mb-3 tourist-form">
+            <div class="card-body">
+                <h6>Турист ${index}</h6>
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <label class="form-label">ФИО</label>
+                        <input type="text" class="form-control" required>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <label class="form-label">Дата рождения</label>
+                        <input type="date" class="form-control" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Номер паспорта</label>
+                        <input type="text" class="form-control" required>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }
+    
+    // --- Validation ---
+    function validateStep2() {
+        // Basic validation example
+        let isValid = true;
+        document.querySelectorAll('#step-2 input[required]').forEach(input => {
+            if (!input.value) {
+                input.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                input.classList.remove('is-invalid');
+            }
+        });
+        return isValid;
+    }
+    
+    // --- Price Calculation ---
+    function updatePrice() {
+        const touristsCount = parseInt(document.getElementById('tourists_count').value) || 1;
+        const hotelSelect = document.getElementById('hotel_tier');
+        const hotelMultiplier = parseFloat(hotelSelect.options[hotelSelect.selectedIndex].dataset.priceMultiplier) || 1;
+        
+        let extrasPrice = 0;
+        bookingData.extra_services = [];
+        document.querySelectorAll('input[name="extra_services"]:checked').forEach(cb => {
+            let price = parseFloat(cb.dataset.price);
+            let serviceName = cb.labels[0].textContent.trim().split(' (')[0];
+            let servicePrice = price;
+
+            if (cb.value === 'insurance' || cb.value === 'visa') {
+                servicePrice = price * touristsCount;
+            }
+            extrasPrice += servicePrice;
+            bookingData.extra_services.push({ name: serviceName, price: servicePrice });
+        });
+
+        const baseTotal = tourBasePrice * touristsCount * hotelMultiplier;
+        const total = baseTotal + extrasPrice;
+
+        // Update sidebar
+        document.getElementById('sidebar-base-price').textContent = formatCurrency(baseTotal);
+        document.getElementById('sidebar-tourists-count').textContent = touristsCount;
+        document.getElementById('sidebar-hotel-tier').textContent = hotelSelect.options[hotelSelect.selectedIndex].text.split(' (')[0];
+        document.getElementById('sidebar-extras-price').textContent = formatCurrency(extrasPrice);
+        document.getElementById('sidebar-total-price').textContent = formatCurrency(total);
+    }
+    
+    // --- Summary ---
+    function generateSummary() {
+        const summaryContainer = document.getElementById('booking-summary');
+        const hotelSelect = document.getElementById('hotel_tier');
+        
+        // This is a simplified logic. In a real app, you'd fetch the final price
+        // from the server *after* applying user-specific discounts.
+        // For this demo, we'll just show the price calculated so far.
+        const finalPrice = document.getElementById('sidebar-total-price').textContent;
+
+        summaryContainer.innerHTML = `
+            <h5>Детали тура</h5>
+            <p><strong>Тур:</strong> {{ tour.name }}</p>
+            <p><strong>Даты:</strong> ${ document.getElementById('tour_dates').options[0].text }</p>
+            <p><strong>Количество туристов:</strong> ${bookingData.tourists_count}</p>
+            <p><strong>Размещение:</strong> ${hotelSelect.options[hotelSelect.selectedIndex].text.split(' (')[0]}</p>
+            <hr>
+            <h5>Дополнительные услуги</h5>
+            ${bookingData.extra_services.map(s => `
+                <div class="d-flex justify-content-between">
+                    <span>${s.name}</span>
+                    <span>${formatCurrency(s.price)}</span>
+                </div>
+            `).join('')}
+            <hr>
+            <div class="d-flex justify-content-between h5">
+                <strong>Итого к оплате:</strong>
+                <strong>${finalPrice}</strong>
+            </div>
+        `;
+    }
+    
+    // --- Event Listeners for dynamic updates ---
+    document.getElementById('tourists_count').addEventListener('input', () => {
+        updateTouristForms();
+        updatePrice();
+    });
+    document.getElementById('hotel_tier').addEventListener('change', updatePrice);
+    document.querySelectorAll('input[name="extra_services"]').forEach(cb => {
+        cb.addEventListener('change', updatePrice);
+    });
+
+    // --- Form Submission ---
+    document.getElementById('booking-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (!document.getElementById('terms').checked) {
+            alert('Пожалуйста, согласитесь с условиями бронирования.');
+            return;
+        }
+        
+        // Collect all data into bookingData object
+        // Booker info
+        bookingData.booker = {
+            full_name: document.getElementById('booker_full_name').value,
+            phone: document.getElementById('booker_phone').value,
+            email: document.getElementById('booker_email').value
+        };
+
+        // Tourists info
+        bookingData.tourists = [];
+        document.querySelectorAll('.tourist-form').forEach(form => {
+            bookingData.tourists.push({
+                full_name: form.querySelector('input[type="text"]').value,
+                birth_date: form.querySelector('input[type="date"]').value,
+                passport_number: form.querySelectorAll('input[type="text"]')[1].value
+            });
+        });
+        
+        console.log('Submitting booking:', bookingData);
+        
+        // AJAX submission
+        fetch('/api/bookings/', { 
+            method: 'POST', 
+            body: JSON.stringify(bookingData), 
+            headers: {
+                'Content-Type': 'application/json',
+                // Add Authorization header if needed, e.g., from a cookie or localStorage
+                // 'Authorization': 'Bearer ' + your_token 
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            // Handle HTTP errors
+            return response.json().then(err => {
+                throw new Error(err.detail || 'Произошла неизвестная ошибка');
+            });
+        })
+        .then(data => {
+            // Redirect to a success page or show a success message
+            window.location.href = `/profile`; // Redirecting to profile to see the new booking
+        })
+        .catch(error => {
+            console.error('Booking Error:', error);
+            alert('Ошибка бронирования: ' + error.message);
+        });
+    });
+
+    // Initial setup
+    updateTouristForms();
+    updatePrice();
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,27 @@
+{
+  "name": "Путешествуй по России",
+  "short_name": "ПутРоссия",
+  "description": "Туристический портал - путешествия по России",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2c3e50",
+  "icons": [
+    {
+      "src": "/static/images/logo.png", 
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/static/images/logo.png", 
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "orientation": "portrait",
+  "lang": "ru-RU",
+  "categories": ["travel", "tourism"],
+  "prefer_related_applications": false
+} 

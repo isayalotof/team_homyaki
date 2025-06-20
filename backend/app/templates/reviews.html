@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+
+{% block title %}Отзывы клиентов — Путешествуй по России{% endblock %}
+
+{% block extra_css %}
+<style>
+    .reviews-header {
+        background-color: #f8f9fa;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .review-stats {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .review-stats__average {
+        font-size: 3rem;
+        font-weight: bold;
+        margin-right: 1rem;
+        line-height: 1;
+    }
+    
+    .review-stats__bars {
+        flex-grow: 1;
+    }
+    
+    .review-stats__row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .review-stats__label {
+        width: 2rem;
+        text-align: right;
+        margin-right: 1rem;
+    }
+    
+    .review-stats__bar-bg {
+        height: 8px;
+        background-color: #f0f0f0;
+        border-radius: 4px;
+        width: 100%;
+        position: relative;
+    }
+    
+    .review-stats__bar {
+        height: 100%;
+        background-color: var(--bs-primary);
+        border-radius: 4px;
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+    
+    .review-stats__count {
+        margin-left: 1rem;
+        font-size: 0.9rem;
+        color: #6c757d;
+        width: 3rem;
+    }
+    
+    .review-card {
+        background-color: #fff;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        border: 1px solid #f0f0f0;
+        transition: all 0.2s;
+    }
+    
+    .review-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        transform: translateY(-2px);
+    }
+    
+    .review-card__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .review-card__author {
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
+    
+    .review-card__date {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .review-card__avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: var(--bs-primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .review-card__rating {
+        margin-bottom: 1rem;
+    }
+    
+    .review-card__content {
+        color: #212529;
+        white-space: pre-line;
+    }
+    
+    .review-card__tour {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #f0f0f0;
+        font-size: 0.9rem;
+    }
+    
+    .review-card__tour-link {
+        color: var(--bs-primary);
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .review-form {
+        background-color: #fff;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    
+    .star-rating-input {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        font-size: 1.5rem;
+    }
+    
+    .star-rating-input input {
+        display: none;
+    }
+    
+    .star-rating-input label {
+        cursor: pointer;
+        color: #ccc;
+        padding: 0 0.25rem;
+    }
+    
+    .star-rating-input input:checked ~ label,
+    .star-rating-input label:hover,
+    .star-rating-input label:hover ~ label {
+        color: #ffb400;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="reviews-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="mb-2">Отзывы наших клиентов</h1>
+                <p class="lead text-muted">Прочитайте впечатления от тех, кто уже путешествовал с нами, или оставьте свой отзыв</p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <a href="#leave-review" class="btn btn-primary btn-lg">Оставить отзыв</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <!-- Reviews Summary Card -->
+        <div class="col-lg-4 mb-4">
+            <div class="card p-4">
+                <h3>Рейтинг</h3>
+                
+                <div class="review-stats">
+                    <div class="review-stats__average">{{ "%.1f"|format(avg_rating)|replace('.', ',') }}</div>
+                    <div class="d-flex align-items-baseline">
+                        <div class="star-rating me-2" style="--rating: {{ avg_rating }};"></div>
+                        <div class="text-muted">({{ total_reviews }} отзывов)</div>
+                    </div>
+                </div>
+                
+                <div class="review-stats__bars">
+                    {% for rating in [5, 4, 3, 2, 1] %}
+                    <div class="review-stats__row">
+                        <div class="review-stats__label">
+                            {{ rating }}★
+                        </div>
+                        <div class="review-stats__bar-bg">
+                            {% set percentage = (ratings[rating] / total_reviews * 100) if total_reviews > 0 else 0 %}
+                            <div class="review-stats__bar" style="width: {{ percentage }}%;"></div>
+                        </div>
+                        <div class="review-stats__count">{{ ratings[rating] }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reviews List -->
+        <div class="col-lg-8">
+            {% for review in reviews %}
+            <div class="review-card">
+                <div class="review-card__header">
+                    <div class="review-card__author">
+                        {{ review.author_name or review.user.full_name }}
+                        {% if review.verified %}
+                        <span class="ms-2 badge bg-success">Проверено</span>
+                        {% endif %}
+                    </div>
+                    <div class="review-card__date">{{ review.created_at.strftime('%d.%m.%Y') }}</div>
+                </div>
+                
+                <div class="review-card__rating">
+                    <div class="star-rating" style="--rating: {{ review.rating }};"></div>
+                </div>
+                
+                <div class="review-card__content">
+                    {{ review.comment }}
+                </div>
+                
+                {% if review.tour %}
+                <div class="review-card__tour">
+                    О туре: <a href="/tours/{{ review.tour.id }}" class="review-card__tour-link">{{ review.tour.name }}</a>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+            {% if not reviews %}
+            <div class="text-center py-5">
+                <p class="text-muted">Пока нет отзывов. Будьте первым, кто оставит отзыв!</p>
+            </div>
+            {% endif %}
+            
+            <!-- Pagination if needed -->
+            {% if pagination and pagination.total_pages > 1 %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if pagination.page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ pagination.page - 1 }}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for p in range(1, pagination.total_pages + 1) %}
+                    <li class="page-item {{ 'active' if p == pagination.page else '' }}">
+                        <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                    </li>
+                    {% endfor %}
+                    
+                    {% if pagination.page < pagination.total_pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ pagination.page + 1 }}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Leave a Review Form -->
+    <div class="row my-5" id="leave-review">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="review-form">
+                <h2 class="mb-4">Оставить отзыв</h2>
+                
+                <form id="review-form" method="post">
+                    <div class="mb-3">
+                        <label class="form-label">Выберите тур (необязательно)</label>
+                        <select name="tour_id" class="form-select">
+                            <option value="">-- Выберите тур --</option>
+                            {% for tour in tours %}
+                            <option value="{{ tour.id }}">{{ tour.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    {% if not current_user %}
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Ваше имя *</label>
+                            <input type="text" name="author_name" class="form-control" required minlength="2">
+                        </div>
+                        <div class="col">
+                            <label class="form-label">Ваш email *</label>
+                            <input type="email" name="author_email" class="form-control" required>
+                            <small class="text-muted">Email не будет отображаться публично</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Ваша оценка *</label>
+                        <div class="star-rating-input">
+                            <input type="radio" id="star5" name="rating" value="5" required/>
+                            <label for="star5">★</label>
+                            <input type="radio" id="star4" name="rating" value="4"/>
+                            <label for="star4">★</label>
+                            <input type="radio" id="star3" name="rating" value="3"/>
+                            <label for="star3">★</label>
+                            <input type="radio" id="star2" name="rating" value="2"/>
+                            <label for="star2">★</label>
+                            <input type="radio" id="star1" name="rating" value="1"/>
+                            <label for="star1">★</label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Ваш отзыв *</label>
+                        <textarea name="comment" class="form-control" rows="4" required minlength="3" maxlength="2000"></textarea>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="consent" required>
+                        <label class="form-check-label" for="consent">Я соглашаюсь с <a href="/terms">правилами сайта</a> и даю согласие на обработку персональных данных</label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Отправить отзыв</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const reviewForm = document.getElementById('review-form');
+    
+    if (reviewForm) {
+        reviewForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(reviewForm);
+            const reviewData = {
+                tour_id: formData.get('tour_id') ? parseInt(formData.get('tour_id')) : null,
+                rating: parseInt(formData.get('rating')),
+                comment: formData.get('comment')
+            };
+            
+            {% if not current_user %}
+            reviewData.author_name = formData.get('author_name');
+            reviewData.author_email = formData.get('author_email');
+            {% endif %}
+            
+            try {
+                const response = await fetch('/api/reviews', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(reviewData)
+                });
+                
+                if (response.ok) {
+                    // Show success message
+                    alert('Спасибо за ваш отзыв! После проверки модератором он появится на сайте.');
+                    reviewForm.reset();
+                    
+                    // If user is logged in, we can reload the page to show the review
+                    {% if current_user %}
+                    location.reload();
+                    {% endif %}
+                } else {
+                    const error = await response.json();
+                    alert(`Ошибка: ${error.detail || 'Не удалось отправить отзыв'}`);
+                }
+            } catch (error) {
+                console.error('Error submitting review:', error);
+                alert('Произошла ошибка при отправке отзыва. Пожалуйста, попробуйте позже.');
+            }
+        });
+    }
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Путешествуй по России - Контакты{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="mb-4">Контакты</h1>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">Наш главный офис</h2>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-3">
+                                    <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                    <span>г. Москва, ул. Тверская, д. 1, офис 513</span>
+                                </li>
+                                <li class="mb-3">
+                                    <i class="fas fa-phone text-primary me-2"></i>
+                                    <span>+7 (495) 123-45-67</span>
+                                </li>
+                                <li class="mb-3">
+                                    <i class="fas fa-envelope text-primary me-2"></i>
+                                    <span>info@travel-russia.ru</span>
+                                </li>
+                                <li class="mb-3">
+                                    <i class="fas fa-clock text-primary me-2"></i>
+                                    <span>Пн-Пт: 9:00 - 20:00, Сб: 10:00 - 17:00</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="bg-light p-3 text-center" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                                <div>
+                                    <i class="fas fa-map fa-3x text-secondary mb-3"></i>
+                                    <p class="mb-0">Здесь будет карта</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">Региональные офисы</h2>
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <h5>Санкт-Петербург</h5>
+                            <p>ул. Невский проспект, д. 30<br>
+                            +7 (812) 456-78-90<br>
+                            spb@travel-russia.ru</p>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <h5>Екатеринбург</h5>
+                            <p>ул. Ленина, д. 20<br>
+                            +7 (343) 123-45-67<br>
+                            ekb@travel-russia.ru</p>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <h5>Новосибирск</h5>
+                            <p>ул. Красный проспект, д. 15<br>
+                            +7 (383) 234-56-78<br>
+                            nsk@travel-russia.ru</p>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <h5>Владивосток</h5>
+                            <p>ул. Светланская, д. 50<br>
+                            +7 (423) 345-67-89<br>
+                            vld@travel-russia.ru</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="h4 mb-4">Напишите нам</h2>
+                    <form>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Ваше имя</label>
+                                <input type="text" class="form-control" id="name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Тема</label>
+                            <input type="text" class="form-control" id="subject" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Сообщение</label>
+                            <textarea class="form-control" id="message" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Отправить сообщение</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <h3 class="h5 mb-3">Мы в социальных сетях</h3>
+                <div class="d-flex">
+                    <a href="#" class="me-3 text-decoration-none">
+                        <i class="fab fa-vk fa-2x text-primary"></i>
+                    </a>
+                    <a href="#" class="me-3 text-decoration-none">
+                        <i class="fab fa-telegram fa-2x text-primary"></i>
+                    </a>
+                    <a href="#" class="me-3 text-decoration-none">
+                        <i class="fab fa-youtube fa-2x text-danger"></i>
+                    </a>
+                    <a href="#" class="me-3 text-decoration-none">
+                        <i class="fab fa-instagram fa-2x text-warning"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

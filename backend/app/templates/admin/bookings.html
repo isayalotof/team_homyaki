@@ -1,0 +1,488 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Управление бронированиями - Путешествуй по России{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <h2>Управление бронированиями</h2>
+        <div>
+            <button type="button" class="btn btn-outline-success me-2" id="exportBookingsBtn">
+                <i class="fas fa-file-excel me-2"></i>Экспорт в Excel
+            </button>
+            <button type="button" class="btn btn-outline-danger" id="printBookingsBtn">
+                <i class="fas fa-print me-2"></i>Печать
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Фильтры -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form id="bookingFilterForm" class="row g-3">
+                    <div class="col-md-2">
+                        <label for="statusFilter" class="form-label">Статус бронирования</label>
+                        <select class="form-select" id="statusFilter" name="status">
+                            <option value="">Все статусы</option>
+                            <option value="pending">Ожидает подтверждения</option>
+                            <option value="confirmed">Подтверждено</option>
+                            <option value="cancelled">Отменено</option>
+                            <option value="completed">Завершено</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="dateFromFilter" class="form-label">Дата с</label>
+                        <input type="date" class="form-control" id="dateFromFilter" name="date_from">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="dateToFilter" class="form-label">Дата по</label>
+                        <input type="date" class="form-control" id="dateToFilter" name="date_to">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="tourFilter" class="form-label">Тур</label>
+                        <select class="form-select" id="tourFilter" name="tour_id">
+                            <option value="">Все туры</option>
+                            {% for tour in tours %}
+                            <option value="{{ tour.id }}">{{ tour.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="searchQuery" class="form-label">Поиск клиента</label>
+                        <input type="text" class="form-control" id="searchQuery" name="search" placeholder="Email или имя...">
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Таблица бронирований -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="bookingsTable" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Клиент</th>
+                                <th>Тур</th>
+                                <th>Даты тура</th>
+                                <th>Количество</th>
+                                <th>Стоимость</th>
+                                <th>Дата бронирования</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking in bookings %}
+                            <tr>
+                                <td>{{ booking.id }}</td>
+                                <td>
+                                    {{ booking.user.full_name }}
+                                    <small class="d-block text-muted">{{ booking.user.email }}</small>
+                                </td>
+                                <td>{{ booking.tour.name }}</td>
+                                <td>{{ booking.tour.start_date.strftime('%d.%m.%Y') }} - {{ booking.tour.end_date.strftime('%d.%m.%Y') }}</td>
+                                <td>{{ booking.tourists_count }}</td>
+                                <td>{{ "{:,.0f}".format(booking.total_price) }} ₽</td>
+                                <td>{{ booking.booking_date.strftime('%d.%m.%Y %H:%M') }}</td>
+                                <td>
+                                    {% if booking.status.value == 'pending' %}
+                                    <span class="badge bg-warning">Ожидает подтверждения</span>
+                                    {% elif booking.status.value == 'confirmed' %}
+                                    <span class="badge bg-success">Подтверждено</span>
+                                    {% elif booking.status.value == 'cancelled' %}
+                                    <span class="badge bg-danger">Отменено</span>
+                                    {% elif booking.status.value == 'completed' %}
+                                    <span class="badge bg-info">Завершено</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" id="actionDropdown{{ booking.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                            Действия
+                                        </button>
+                                        <ul class="dropdown-menu" aria-labelledby="actionDropdown{{ booking.id }}">
+                                            <li>
+                                                <button class="dropdown-item view-booking" data-booking-id="{{ booking.id }}">
+                                                    <i class="fas fa-eye me-2"></i>Просмотр
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button class="dropdown-item send-email" data-email="{{ booking.user.email }}">
+                                                    <i class="fas fa-envelope me-2"></i>Отправить письмо
+                                                </button>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <button class="dropdown-item change-status" 
+                                                        data-booking-id="{{ booking.id }}" 
+                                                        data-status="confirmed"
+                                                        {% if booking.status.value == 'confirmed' or booking.status.value == 'completed' or booking.status.value == 'cancelled' %}disabled{% endif %}>
+                                                    <i class="fas fa-check-circle me-2 text-success"></i>Подтвердить
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button class="dropdown-item change-status" 
+                                                        data-booking-id="{{ booking.id }}" 
+                                                        data-status="completed"
+                                                        {% if booking.status.value == 'completed' or booking.status.value == 'cancelled' %}disabled{% endif %}>
+                                                    <i class="fas fa-flag-checkered me-2 text-info"></i>Завершить
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button class="dropdown-item change-status" 
+                                                        data-booking-id="{{ booking.id }}" 
+                                                        data-status="cancelled"
+                                                        {% if booking.status.value == 'cancelled' %}disabled{% endif %}>
+                                                    <i class="fas fa-ban me-2 text-danger"></i>Отменить
+                                                </button>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <button class="dropdown-item print-voucher" data-booking-id="{{ booking.id }}">
+                                                    <i class="fas fa-file-alt me-2"></i>Печать ваучера
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {% if pagination.total_pages > 1 %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item {% if pagination.current_page == 1 %}disabled{% endif %}">
+                            <a class="page-link" href="?page={{ pagination.current_page - 1 }}">Предыдущая</a>
+                        </li>
+                        
+                        {% for page in range(1, pagination.total_pages + 1) %}
+                        <li class="page-item {% if page == pagination.current_page %}active{% endif %}">
+                            <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                        </li>
+                        {% endfor %}
+                        
+                        <li class="page-item {% if pagination.current_page == pagination.total_pages %}disabled{% endif %}">
+                            <a class="page-link" href="?page={{ pagination.current_page + 1 }}">Следующая</a>
+                        </li>
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно просмотра бронирования -->
+<div class="modal fade" id="viewBookingModal" tabindex="-1" aria-labelledby="viewBookingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewBookingModalLabel">Информация о бронировании</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="bookingDetails">
+                    <!-- Сюда будут загружены детали бронирования через AJAX -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button type="button" class="btn btn-primary" id="printBookingDetails">Печать</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно отправки письма -->
+<div class="modal fade" id="sendEmailModal" tabindex="-1" aria-labelledby="sendEmailModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="sendEmailModalLabel">Отправить письмо клиенту</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="emailForm">
+                    <div class="mb-3">
+                        <label for="emailTo" class="form-label">Кому</label>
+                        <input type="email" class="form-control" id="emailTo" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="emailSubject" class="form-label">Тема</label>
+                        <input type="text" class="form-control" id="emailSubject" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="emailBody" class="form-label">Сообщение</label>
+                        <textarea class="form-control" id="emailBody" rows="6" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="sendEmailBtn">Отправить</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработка нажатия на кнопку просмотра бронирования
+    document.querySelectorAll('.view-booking').forEach(button => {
+        button.addEventListener('click', async function() {
+            const bookingId = this.getAttribute('data-booking-id');
+            const detailsContainer = document.getElementById('bookingDetails');
+            
+            try {
+                const response = await fetch(`/api/v1/bookings/${bookingId}`);
+                if (response.ok) {
+                    const booking = await response.json();
+                    
+                    // Генерация HTML с деталями бронирования
+                    let html = `
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h6>Основная информация</h6>
+                                <p><strong>ID бронирования:</strong> ${booking.id}</p>
+                                <p><strong>Дата бронирования:</strong> ${new Date(booking.booking_date).toLocaleString('ru')}</p>
+                                <p><strong>Статус:</strong> ${translateStatus(booking.status)}</p>
+                                <p><strong>Общая стоимость:</strong> ${new Intl.NumberFormat('ru-RU').format(booking.total_price)} ₽</p>
+                                ${booking.discount_amount > 0 ? `<p><strong>Скидка:</strong> ${new Intl.NumberFormat('ru-RU').format(booking.discount_amount)} ₽</p>` : ''}
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Информация о клиенте</h6>
+                                <p><strong>ФИО:</strong> ${booking.user.full_name}</p>
+                                <p><strong>Email:</strong> ${booking.user.email}</p>
+                                <p><strong>Телефон:</strong> ${booking.user.phone || 'Не указан'}</p>
+                                <p><strong>Статус клиента:</strong> ${booking.user.client_status}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6>Информация о туре</h6>
+                                <p><strong>Тур:</strong> ${booking.tour.name}</p>
+                                <p><strong>Направление:</strong> ${booking.tour.city}, ${booking.tour.country}</p>
+                                <p><strong>Даты:</strong> ${new Date(booking.tour.start_date).toLocaleDateString('ru')} - ${new Date(booking.tour.end_date).toLocaleDateString('ru')} (${booking.tour.duration_days} дней)</p>
+                                <p><strong>Количество туристов:</strong> ${booking.tourists_count}</p>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Если есть информация о туристах
+                    if (booking.tourists_data && booking.tourists_data.length > 0) {
+                        html += `
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <h6>Данные туристов</h6>
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>ФИО</th>
+                                                <th>Пол</th>
+                                                <th>Дата рождения</th>
+                                                <th>Паспорт</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                        `;
+                        
+                        booking.tourists_data.forEach((tourist, index) => {
+                            html += `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td>${tourist.full_name}</td>
+                                    <td>${tourist.gender === 'male' ? 'Муж' : 'Жен'}</td>
+                                    <td>${tourist.birth_date ? new Date(tourist.birth_date).toLocaleDateString('ru') : 'Н/Д'}</td>
+                                    <td>${tourist.passport || 'Н/Д'}</td>
+                                </tr>
+                            `;
+                        });
+                        
+                        html += `
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    // Дополнительная информация
+                    html += `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Дополнительные услуги</h6>
+                                ${booking.extra_services && booking.extra_services.length > 0 
+                                    ? `<ul>${booking.extra_services.map(service => `<li>${service.name}: ${new Intl.NumberFormat('ru-RU').format(service.price)} ₽</li>`).join('')}</ul>`
+                                    : '<p>Нет дополнительных услуг</p>'}
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Проживание</h6>
+                                <p><strong>Отель:</strong> ${booking.tour.hotel ? booking.tour.hotel.name : 'Не указан'}</p>
+                                <p><strong>Категория номера:</strong> ${booking.hotel_tier || 'Стандарт'}</p>
+                            </div>
+                        </div>
+                    `;
+                    
+                    detailsContainer.innerHTML = html;
+                    
+                    // Открытие модального окна
+                    const modal = new bootstrap.Modal(document.getElementById('viewBookingModal'));
+                    modal.show();
+                } else {
+                    alert('Не удалось загрузить информацию о бронировании');
+                }
+            } catch (error) {
+                console.error('Ошибка при загрузке информации о бронировании:', error);
+                alert('Произошла ошибка при загрузке данных');
+            }
+        });
+    });
+    
+    // Функция перевода статуса на русский
+    function translateStatus(status) {
+        const statuses = {
+            'pending': 'Ожидает подтверждения',
+            'confirmed': 'Подтверждено',
+            'cancelled': 'Отменено',
+            'completed': 'Завершено'
+        };
+        return statuses[status] || status;
+    }
+    
+    // Обработка нажатия на кнопку смены статуса
+    document.querySelectorAll('.change-status').forEach(button => {
+        button.addEventListener('click', async function() {
+            if (this.disabled) return;
+            
+            const bookingId = this.getAttribute('data-booking-id');
+            const newStatus = this.getAttribute('data-status');
+            
+            if (confirm(`Вы уверены, что хотите изменить статус бронирования на "${translateStatus(newStatus)}"?`)) {
+                try {
+                    const response = await fetch(`/api/v1/bookings/${bookingId}/status`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ status: newStatus })
+                    });
+                    
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('Не удалось изменить статус бронирования');
+                    }
+                } catch (error) {
+                    console.error('Ошибка при изменении статуса:', error);
+                    alert('Произошла ошибка при изменении статуса');
+                }
+            }
+        });
+    });
+    
+    // Открытие модального окна для отправки письма
+    document.querySelectorAll('.send-email').forEach(button => {
+        button.addEventListener('click', function() {
+            const email = this.getAttribute('data-email');
+            document.getElementById('emailTo').value = email;
+            
+            const modal = new bootstrap.Modal(document.getElementById('sendEmailModal'));
+            modal.show();
+        });
+    });
+    
+    // Обработчик отправки письма
+    document.getElementById('sendEmailBtn').addEventListener('click', async function() {
+        const form = document.getElementById('emailForm');
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+        
+        const to = document.getElementById('emailTo').value;
+        const subject = document.getElementById('emailSubject').value;
+        const body = document.getElementById('emailBody').value;
+        
+        try {
+            const response = await fetch('/api/v1/admin/send-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ to, subject, body })
+            });
+            
+            if (response.ok) {
+                alert('Письмо успешно отправлено');
+                bootstrap.Modal.getInstance(document.getElementById('sendEmailModal')).hide();
+            } else {
+                alert('Не удалось отправить письмо');
+            }
+        } catch (error) {
+            console.error('Ошибка при отправке письма:', error);
+            alert('Произошла ошибка при отправке письма');
+        }
+    });
+    
+    // Печать ваучера
+    document.querySelectorAll('.print-voucher').forEach(button => {
+        button.addEventListener('click', function() {
+            const bookingId = this.getAttribute('data-booking-id');
+            window.open(`/api/v1/bookings/${bookingId}/voucher`, '_blank');
+        });
+    });
+    
+    // Экспорт в Excel
+    document.getElementById('exportBookingsBtn').addEventListener('click', function() {
+        const queryParams = new URLSearchParams(window.location.search);
+        window.location.href = `/api/v1/admin/bookings/export?${queryParams.toString()}`;
+    });
+    
+    // Печать списка бронирований
+    document.getElementById('printBookingsBtn').addEventListener('click', function() {
+        window.print();
+    });
+    
+    // Печать деталей бронирования
+    document.getElementById('printBookingDetails').addEventListener('click', function() {
+        const printContents = document.getElementById('bookingDetails').innerHTML;
+        const originalContents = document.body.innerHTML;
+        
+        document.body.innerHTML = `
+            <div class="container mt-4">
+                <h3 class="mb-4 text-center">Информация о бронировании</h3>
+                ${printContents}
+            </div>
+        `;
+        
+        window.print();
+        document.body.innerHTML = originalContents;
+        
+        // Переинициализация модального окна после восстановления контента
+        const modal = new bootstrap.Modal(document.getElementById('viewBookingModal'));
+        modal.show();
+    });
+});
+</script>
+{% endblock %}
